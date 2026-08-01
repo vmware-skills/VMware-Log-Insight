@@ -97,7 +97,7 @@ If you installed with `uv tool install`, prefer the entry point `vmware-log-insi
 > **Disclaimer**: Community-maintained open-source project, **not affiliated with,
 > endorsed by, or sponsored by VMware, Inc. or Broadcom Inc.**
 
-1. **Source Code** — https://github.com/zw008/VMware-Log-Insight (MIT).
+1. **Source Code** — https://github.com/vmware-skills/VMware-Log-Insight (MIT).
 2. **Config file contents** — `config.yaml` holds only host/port/username/provider;
    no passwords or tokens. Secrets live only in `.env` (`chmod 600`).
 3. **Webhook data scope** — none. This skill makes no outbound calls except to the

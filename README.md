@@ -16,10 +16,10 @@ family. **Strictly non-destructive**: it queries, it never writes.
 | Need | Skill | Tools |
 |---|---|:-:|
 | Raw centralized logs + spikes | **vmware-log-insight** (this) | 7 |
-| vCenter events & alarms | [vmware-monitor](https://github.com/zw008/VMware-Monitor) | 27 |
-| Metrics, anomalies, capacity | [vmware-aria](https://github.com/zw008/VMware-Aria) | 28 |
-| Incident correlation / root cause | [vmware-debug](https://github.com/zw008/VMware-Debug) — feed it `log_search` output | 2 |
-| VM lifecycle / operations | [vmware-aiops](https://github.com/zw008/VMware-AIops) | 49 |
+| vCenter events & alarms | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) | 27 |
+| Metrics, anomalies, capacity | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) | 28 |
+| Incident correlation / root cause | [vmware-debug](https://github.com/vmware-skills/VMware-Debug) — feed it `log_search` output | 2 |
+| VM lifecycle / operations | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) | 49 |
 
 ## Install
 

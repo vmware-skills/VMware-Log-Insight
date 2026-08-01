@@ -4,7 +4,7 @@
   "title": "VMware Log Insight",
   "description": "Read-only VMware Aria Operations for Logs (Log Insight): search + aggregation. 7 MCP tools.",
   "repository": {
-    "url": "https://github.com/zw008/VMware-Log-Insight",
+    "url": "https://github.com/vmware-skills/VMware-Log-Insight",
     "source": "github"
   },
   "version": "1.8.8",

@@ -14,10 +14,10 @@ VM syslog 的日志平台）的**只读**日志检索与聚合。VMware skill �
 | 需求 | Skill | 工具数 |
 |---|---|:-:|
 | 原始集中日志 + 突刺 | **vmware-log-insight**（本项目） | 7 |
-| vCenter 事件与告警 | [vmware-monitor](https://github.com/zw008/VMware-Monitor) | 27 |
-| 指标 / 异常 / 容量 | [vmware-aria](https://github.com/zw008/VMware-Aria) | 28 |
-| 故障关联 / 根因 | [vmware-debug](https://github.com/zw008/VMware-Debug)（把 `log_search` 结果喂给它） | 2 |
-| VM 生命周期 / 运维 | [vmware-aiops](https://github.com/zw008/VMware-AIops) | 49 |
+| vCenter 事件与告警 | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) | 27 |
+| 指标 / 异常 / 容量 | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) | 28 |
+| 故障关联 / 根因 | [vmware-debug](https://github.com/vmware-skills/VMware-Debug)（把 `log_search` 结果喂给它） | 2 |
+| VM 生命周期 / 运维 | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) | 49 |
 
 ## 安装
 

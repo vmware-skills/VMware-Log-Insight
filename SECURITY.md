@@ -5,7 +5,7 @@
 This is a community-maintained open-source project and is **not affiliated with,
 endorsed by, or sponsored by VMware, Inc. or Broadcom Inc.** "VMware", "vSphere",
 and "Aria" are trademarks of Broadcom. Source code is publicly auditable at
-[github.com/zw008/VMware-Log-Insight](https://github.com/zw008/VMware-Log-Insight)
+[github.com/vmware-skills/VMware-Log-Insight](https://github.com/vmware-skills/VMware-Log-Insight)
 under the MIT license.
 
 ## Reporting Vulnerabilities
