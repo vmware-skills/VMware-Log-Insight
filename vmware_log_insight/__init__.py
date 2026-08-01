@@ -6,4 +6,4 @@ non-destructive: it queries events, aggregations, fields, and alerts; it never
 ingests, modifies, or deletes anything.
 """
 
-__version__ = "1.8.8"
+__version__ = "1.8.9"

@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.zw008/vmware-log-insight",
+  "name": "io.github.vmware-skills/vmware-log-insight",
   "title": "VMware Log Insight",
   "description": "Read-only VMware Aria Operations for Logs (Log Insight): search + aggregation. 7 MCP tools.",
   "repository": {
     "url": "https://github.com/vmware-skills/VMware-Log-Insight",
     "source": "github"
   },
-  "version": "1.8.8",
+  "version": "1.8.9",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "vmware-log-insight",
-      "version": "1.8.8",
+      "version": "1.8.9",
       "transport": {
         "type": "stdio"
       }

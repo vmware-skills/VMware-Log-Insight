@@ -1,4 +1,4 @@
-<!-- mcp-name: io.github.zw008/vmware-log-insight -->
+<!-- mcp-name: io.github.vmware-skills/vmware-log-insight -->
 
 # VMware Log Insight
 
