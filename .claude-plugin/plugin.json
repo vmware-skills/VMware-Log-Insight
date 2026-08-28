@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "vmware-log-insight",
+  "displayName": "VMware Log Insight",
+  "version": "1.8.9",
+  "description": "Read-only VMware Aria Operations for Logs (Log Insight): search + aggregation. 7 MCP tools.",
+  "author": {
+    "name": "Wei Zhou",
+    "email": "zhouwei008@gmail.com",
+    "url": "https://github.com/vmware-skills"
+  },
+  "homepage": "https://github.com/vmware-skills/VMware-Log-Insight",
+  "repository": "https://github.com/vmware-skills/VMware-Log-Insight",
+  "license": "MIT",
+  "keywords": [
+    "log-insight",
+    "mcp",
+    "vmware",
+    "vsphere"
+  ]
+}

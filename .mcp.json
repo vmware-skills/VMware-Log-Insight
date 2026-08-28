@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "vmware-log-insight": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "vmware-log-insight==1.8.9",
+        "vmware-log-insight-mcp"
+      ]
+    }
+  }
+}
