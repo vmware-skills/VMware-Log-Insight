@@ -20,6 +20,7 @@ from vmware_policy import sanitize
 
 from vmware_log_insight.config import ConfigError, load_config
 from vmware_log_insight.connection import ConnectionManager, LogInsightApiError
+from vmware_log_insight import __version__
 
 logger = logging.getLogger("mcp_server")
 
@@ -95,6 +96,11 @@ mcp = FastMCP(
         "metrics/anomalies use vmware-aria."
     ),
 )
+
+# FastMCP takes no version argument and leaves the lowlevel server's at
+# None, which makes `initialize` answer with the MCP SDK's version rather
+# than ours. Set it so a client can tell which release it is talking to.
+mcp._mcp_server.version = __version__
 
 _conn_mgr: Optional[ConnectionManager] = None
 
