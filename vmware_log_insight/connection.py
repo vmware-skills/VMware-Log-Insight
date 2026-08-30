@@ -184,6 +184,22 @@ class LogInsightClient:
                     "~/.vmware-log-insight/config.yaml and the password env var in "
                     "~/.vmware-log-insight/.env."
                 )
+            elif status in (404, 405):
+                # _hint_for_status is written for resource calls, where 404
+                # genuinely means "wrong id". Reached from here it told the user
+                # to run `alert list` and copy an id — a login has no id, and
+                # that command performs the authentication that just failed, so
+                # following the advice reproduced the error (2026-08-30). On the
+                # login endpoint the same status means nothing answers at this
+                # path, which is a host/port/appliance question. Kept terse for
+                # the same reason as _hint_for_status: the MCP layer renders
+                # exceptions through sanitize(str(exc), 300), and a longer
+                # version loses its own closing remedy.
+                hint = (
+                    "Nothing answers at that path — not a credential problem. "
+                    "Check host and port in config.yaml (the API is on 9543, "
+                    "not 443), and whether a proxy forwards /api/v2."
+                )
             else:
                 hint = _hint_for_status(status)
             raise LogInsightApiError(
