@@ -1,3 +1,37 @@
+## v1.8.11 — three things that could not work when followed
+
+Found against a real VCF 9.1 estate.
+
+**`verify_ssl: false` needed a package this skill never declared.** On a clean
+install from PyPI, authenticating against a self-signed target — the VCF default,
+and the entire reason that setting exists — died with `No module named
+'urllib3'`. The import sat behind `if not target.verify_ssl:`, so it never ran
+in this repo's own tests, and the development environment has no urllib3 either,
+which is why it survived. The code it guarded was already inert: this client is
+httpx, which does not use urllib3 and does not raise `InsecureRequestWarning`.
+So it is removed rather than declared — declaring it would have made the clean
+install work while keeping a line that does nothing.
+
+**A 404 on login was diagnosed as a bad object id.** The remedy printed was
+"list the parent collection first (e.g. `vmware-log-insight alert list`) and copy
+an exact id". A login has no id, and `alert list` performs the very
+authentication that just failed, so following the advice reproduced the error.
+404 and 405 on the login endpoint now say what they actually mean: nothing
+answers at that path — check host and port, and whether a proxy forwards
+`/api/v2`. The message is deliberately terse, and a test asserts every
+login-failure message survives the MCP layer's 300-character truncation intact,
+because a message that loses its own closing remedy leaves the agent with a
+diagnosis and no next step.
+
+**`doctor` reported on a different config file from the one the tools load.**
+With `VMWARE_LOG_INSIGHT_CONFIG` set it inspected the default path, found it
+fine, and printed PASS. The precedence now lives in one `resolve_config_path`,
+with a structural test keeping the callers from drifting apart again.
+
+Also: `server.json` never started the MCP server — it carried only the package
+identifier, so a registry client composed `uvx vmware-log-insight`, which runs
+the CLI and exits.
+
 ## v1.8.10 — two wrong numbers: the server's own version, and the advertised tool count
 
 Both defects were invisible to the test suites and both were user-facing.

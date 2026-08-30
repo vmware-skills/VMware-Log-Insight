@@ -5,7 +5,7 @@
       "command": "uvx",
       "args": [
         "--from",
-        "vmware-log-insight==1.8.10",
+        "vmware-log-insight==1.8.11",
         "vmware-log-insight-mcp"
       ]
     }
