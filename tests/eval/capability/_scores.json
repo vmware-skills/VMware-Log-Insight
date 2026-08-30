@@ -77,25 +77,32 @@
     "manifest_context_headroom": {
       "detail": {
         "heaviest_tools": {
-          "alert_history": 271,
-          "alert_list": 277,
-          "log_aggregate": 557,
-          "log_fields": 221,
-          "log_search": 523
+          "alert_history": 287,
+          "alert_list": 292,
+          "log_aggregate": 594,
+          "log_fields": 232,
+          "log_search": 560
         },
-        "manifest_tokens": 2202,
-        "mean_tokens_per_tool": 314.6,
+        "manifest_tokens": 2337,
+        "mean_tokens_per_tool": 333.9,
         "reference_context": 16384,
         "tool_count": 7
       },
       "maximum": 16384,
-      "pct": 86.6,
+      "pct": 85.7,
       "unit": "tokens",
-      "value": 14182
+      "value": 14047
     },
     "parameter_documentation_coverage": {
       "detail": {
-        "undocumented_by_tool": {}
+        "undocumented_by_tool": {},
+        "value_set_candidates": {
+          "log_aggregate.last": [
+            "2h",
+            "30m",
+            "7d"
+          ]
+        }
       },
       "maximum": 24,
       "pct": 100.0,
@@ -106,8 +113,8 @@
       "detail": {
         "ceiling": 350,
         "over_ceiling": {
-          "log_aggregate": 557,
-          "log_search": 523
+          "log_aggregate": 594,
+          "log_search": 560
         }
       },
       "maximum": 7,
@@ -173,14 +180,16 @@
           "args": 100.0,
           "gotcha": 100.0,
           "marker": 100.0,
-          "next_hop": 100.0,
+          "next_hop": 85.7,
           "what": 100.0,
           "when": 100.0
         },
         "tools_graded": 7,
         "weakest_tools": {
           "alert_get": [],
-          "alert_history": [],
+          "alert_history": [
+            "next_hop"
+          ],
           "alert_list": [],
           "log_aggregate": [],
           "log_fields": [],
@@ -189,9 +198,9 @@
         }
       },
       "maximum": 42,
-      "pct": 100.0,
+      "pct": 97.6,
       "unit": "points",
-      "value": 42
+      "value": 41
     },
     "tool_failure_payload_quality": {
       "detail": {
