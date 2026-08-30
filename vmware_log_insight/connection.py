@@ -142,10 +142,6 @@ class LogInsightClient:
         self._session_expires_at: float = 0.0
         self._liveness_checked_at: float = 0.0
 
-        if not target.verify_ssl:
-            import urllib3
-
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         self._client = httpx.Client(
             base_url=self._base_url,
