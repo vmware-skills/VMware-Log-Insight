@@ -40,13 +40,13 @@
       },
       "maximum": 2,
       "pct": 100.0,
+      "stale": true,
       "unit": "required entity params",
       "value": 2
     },
     "entry_point_availability": {
       "detail": {
-        "full_entry_points": 5,
-        "read_only_entry_points": 5
+        "full_entry_points": 5
       },
       "maximum": 7,
       "pct": 71.4,
@@ -56,9 +56,9 @@
     "error_actionability": {
       "detail": {
         "composed_hint_sites": [
-          "connection.py:198",
-          "connection.py:298",
-          "connection.py:277"
+          "connection.py:210",
+          "connection.py:310",
+          "connection.py:289"
         ],
         "dead_end_count": 0,
         "dead_end_errors": [],
@@ -77,21 +77,21 @@
     "manifest_context_headroom": {
       "detail": {
         "heaviest_tools": {
-          "alert_history": 179,
-          "alert_list": 195,
-          "log_aggregate": 335,
-          "log_fields": 160,
-          "log_search": 348
+          "alert_history": 271,
+          "alert_list": 277,
+          "log_aggregate": 557,
+          "log_fields": 221,
+          "log_search": 523
         },
-        "manifest_tokens": 1415,
-        "mean_tokens_per_tool": 202.1,
+        "manifest_tokens": 2202,
+        "mean_tokens_per_tool": 314.6,
         "reference_context": 16384,
         "tool_count": 7
       },
       "maximum": 16384,
-      "pct": 91.4,
+      "pct": 86.6,
       "unit": "tokens",
-      "value": 14969
+      "value": 14182
     },
     "parameter_documentation_coverage": {
       "detail": {
@@ -105,12 +105,15 @@
     "per_tool_token_discipline": {
       "detail": {
         "ceiling": 350,
-        "over_ceiling": {}
+        "over_ceiling": {
+          "log_aggregate": 557,
+          "log_search": 523
+        }
       },
       "maximum": 7,
-      "pct": 100.0,
+      "pct": 71.4,
       "unit": "tools",
-      "value": 7
+      "value": 5
     },
     "read_only_manifest_saving": {
       "detail": {
@@ -122,6 +125,7 @@
       },
       "maximum": 1415,
       "pct": 0.0,
+      "stale": true,
       "unit": "tokens",
       "value": 0
     },
@@ -139,8 +143,8 @@
         "budget_chars": 300,
         "over_budget": [],
         "remedy_after_interpolation": [
-          "config.py:243",
-          "config.py:228",
+          "config.py:255",
+          "config.py:226",
           "constraints.py:35",
           "constraints.py:76",
           "constraints.py:87",
