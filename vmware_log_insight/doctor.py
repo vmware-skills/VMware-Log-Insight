@@ -16,12 +16,21 @@ console = Console()
 
 def run_doctor(config_path: Path | None = None, skip_auth: bool = False) -> bool:
     """Run all pre-flight checks. Returns True if all pass."""
-    from vmware_log_insight.config import CONFIG_FILE, ENV_FILE, load_config
+    from vmware_log_insight.config import (
+        CONFIG_FILE,
+        ENV_FILE,
+        load_config,
+        resolve_config_path,
+    )
 
     checks: list[tuple[str, bool, str]] = []
 
-    # 1. Config file exists
-    path = config_path or CONFIG_FILE
+    # 1. Config file exists — resolved exactly as the tools resolve it,
+    # including $VMWARE_LOG_INSIGHT_CONFIG, which this function used to skip.
+    # With the variable set it inspected ~/.vmware-log-insight/config.yaml,
+    # found it fine, and reported PASS while every tool call opened a different
+    # file (2026-08-30).
+    path = resolve_config_path(config_path)
     if path.exists():
         checks.append(("Config file", True, str(path)))
     else:
