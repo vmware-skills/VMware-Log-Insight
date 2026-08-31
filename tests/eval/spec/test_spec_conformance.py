@@ -82,7 +82,7 @@ def test_all_called_endpoints_are_in_official_spec():
     allowed = _allowed()
     violations = []
     for f in _source_files():
-        for method, path in _calls_in(f.read_text()):
+        for method, path in _calls_in(f.read_text(encoding="utf-8")):
             if (method, path) not in allowed:
                 violations.append(f"{f.name}: {method} {path}")
     assert not violations, (
@@ -95,7 +95,7 @@ def test_scan_actually_found_the_core_endpoints():
     """Guard against a no-op scan: the known core calls must be detected."""
     seen = set()
     for f in _source_files():
-        seen.update(_calls_in(f.read_text()))
+        seen.update(_calls_in(f.read_text(encoding="utf-8")))
     assert ("POST", "/sessions") in seen
     assert ("GET", "/events/{}") in seen
     assert ("GET", "/aggregated-events/{}") in seen

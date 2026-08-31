@@ -23,6 +23,7 @@ import sys
 from typing import Optional
 
 from vmware_policy import describe_tool_parameters, mtime_cached_loader, set_environment_resolver
+from vmware_policy import skill_name
 
 from vmware_log_insight.config import CONFIG_FILE, load_config
 
@@ -86,7 +87,12 @@ def _environment_for(target: Optional[str]) -> str:
         return ""
 
 
-set_environment_resolver(_environment_for)
+# Keyed by skill: the registry used to be one process-global slot, and a
+# bare `import` of any sibling's server module replaced whichever resolver
+# was there -- measured turning a freeze-production-writes rule from DENY
+# to ALLOW. Keyed, a resolver only ever answers for its own skill, so
+# registering at import time is safe again.
+set_environment_resolver(_environment_for, skill=skill_name(__name__))
 
 __all__ = [
     "mcp",
