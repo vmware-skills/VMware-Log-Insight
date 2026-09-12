@@ -1,0 +1,20 @@
+{
+  "name": "@zw008/vmware-log-insight",
+  "version": "1.8.16",
+  "description": "Read-only VMware Aria Operations for Logs (Log Insight): search + aggregation. 7 MCP tools.",
+  "private": true,
+  "license": "MIT",
+  "homepage": "https://github.com/vmware-skills/VMware-Log-Insight",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vmware-skills/VMware-Log-Insight.git"
+  },
+  "openclaw": {
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2"
+    }
+  }
+}

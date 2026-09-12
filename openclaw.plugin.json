@@ -1,0 +1,24 @@
+{
+  "id": "vmware-log-insight",
+  "name": "VMware Log Insight",
+  "description": "Read-only VMware Aria Operations for Logs (Log Insight): search + aggregation. 7 MCP tools.",
+  "skills": [
+    "./skills"
+  ],
+  "mcpServers": {
+    "vmware-log-insight": {
+      "transport": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "vmware-log-insight==1.8.16",
+        "vmware-log-insight-mcp"
+      ]
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}
