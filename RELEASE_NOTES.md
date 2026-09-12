@@ -1,3 +1,21 @@
+## v1.8.16 — OpenClaw can load the skill
+
+**OpenClaw could not show this skill to the model.** `metadata.openclaw.requires` listed
+config *file paths* under `requires.config`, which OpenClaw reads as `openclaw.json` keys that
+must be truthy — so the skill was "needs setup / not visible to the model" whatever was on disk
+(verified on OpenClaw 2026.6.35). `requires.env` named an optional override and `requires.bins`
+demanded a CLI that a plugin install (uvx) never has. `requires` is now `anyBins: [<cli>, "uvx"]`;
+the variables are still declared, under `optional.env`.
+
+**Install commands in the skill pin this release.** ClawHub reviews SKILL.md and references/,
+not the package they install, so an unpinned `uv tool install` vouched for code nobody reviewed.
+Every install command for this package in the skill now names this version.
+
+**A config path written as `~/…` now resolves.** Every MCP example config and setup-guide snippet
+sets `VMWARE_LOG_INSIGHT_CONFIG` to `~/.vmware-log-insight/config.yaml`, but MCP clients pass env values verbatim and the
+path was used unexpanded, so copying the snippet gave "Config file not found" for a file that was
+there. `~` is now expanded in the variable and in `--config`.
+
 ## v1.8.15 — one answer per .env, on every platform
 
 `.env` permissions are decided by `vmware_policy.fsperms` instead of POSIX mode

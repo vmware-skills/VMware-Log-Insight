@@ -19,7 +19,7 @@ installer:
   package: vmware-log-insight
 allowed-tools:
   - Bash
-metadata: {"openclaw":{"requires":{"env":["VMWARE_LOG_INSIGHT_CONFIG"],"bins":["vmware-log-insight"],"config":["~/.vmware-log-insight/config.yaml","~/.vmware-log-insight/.env"]},"optional":{"env":["VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD","VMWARE_LOG_INSIGHT_<TARGET>_USERNAME","VMWARE_AUDIT_APPROVED_BY"]},"primaryEnv":"VMWARE_LOG_INSIGHT_CONFIG"}}
+metadata: {"openclaw":{"requires":{"anyBins":["vmware-log-insight","uvx"]},"optional":{"env":["VMWARE_LOG_INSIGHT_CONFIG","VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD","VMWARE_LOG_INSIGHT_<TARGET>_USERNAME","VMWARE_AUDIT_APPROVED_BY"]}}}
 ---
 
 # VMware Log Insight
@@ -46,7 +46,7 @@ family. Strictly non-destructive: it queries, it never writes.
 ## Quick Install
 
 ```bash
-uv tool install vmware-log-insight
+uv tool install vmware-log-insight==1.8.16
 cp config.example.yaml ~/.vmware-log-insight/config.yaml   # then edit
 vmware-log-insight doctor       # verify connectivity
 ```
