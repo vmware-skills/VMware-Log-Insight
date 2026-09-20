@@ -84,16 +84,63 @@ def _safe_error(exc: Exception, tool: str) -> str:
     return f"{type(exc).__name__}: operation failed."
 
 
-mcp = FastMCP(
-    "vmware-log-insight",
-    instructions=(
-        "VMware Aria Operations for Logs (vRealize Log Insight): read-only log "
-        "search, aggregation/spike detection, field discovery, and alert queries. "
-        "Feed results to vmware-debug's incident_timeline to correlate with events "
-        "from other sources. For vCenter events/alarms use vmware-monitor; for "
-        "metrics/anomalies use vmware-aria."
-    ),
+_BASE_INSTRUCTIONS = (
+    "VMware Aria Operations for Logs (vRealize Log Insight): read-only log "
+    "search, aggregation/spike detection, field discovery, and alert queries. "
+    "Feed results to vmware-debug's incident_timeline to correlate with events "
+    "from other sources. For vCenter events/alarms use vmware-monitor; for "
+    "metrics/anomalies use vmware-aria."
 )
+
+_TARGET_RULE = (
+    " Choosing a target: every tool that queries logs takes `target`. Choose it "
+    "from what the user asked. If the request does not say which server, and more "
+    "than one is configured, ask the user which one before querying — each server "
+    "indexes its own logs, so the same query answers differently on each. A result "
+    "does not repeat the target that answered, so pass `target` explicitly and say "
+    "in the answer which server you queried."
+)
+
+
+def _target_instructions() -> str:
+    """Server instructions that name the configured targets and how to choose one.
+
+    ``initialize`` hands the client these instructions, and for a skill whose
+    every tool takes ``target`` that text is the only place the client learns
+    which targets exist. Without it the model calls tools with no target, gets
+    whatever ``default_target`` happens to be, and answers confidently about the
+    wrong system — measured on Monitor 2026-09-15, where a standalone ESXi host
+    was the default and "how many VMs does the vCenter have" was answered from
+    that host.
+
+    Built from the loaded config on every call rather than written out here: a
+    hardcoded sentence would drift from the operator's file the day they edit it.
+    Never raises — a missing or broken config must not stop the server from
+    starting, and the tools report that error themselves with the remedy.
+    """
+    try:
+        cfg = load_config()
+    except Exception as exc:  # noqa: BLE001 — instructions are advisory, startup is not
+        # Say so rather than dropping the listing: a client shown no listing at
+        # all cannot tell "this skill has no targets" from "this skill could not
+        # read them", and the first reading is the one that produces a confident
+        # answer about a system nobody chose. Only the exception's type — its
+        # text quotes the config path.
+        detail = f"could not be read ({type(exc).__name__}) — run `vmware-log-insight doctor`"
+    else:
+        listed = "; ".join(
+            f"{name} ({t.host}{', default' if name == cfg.default_target else ''})"
+            for name, t in cfg.targets.items()
+        )
+        detail = (
+            f"{listed}. Each is a Log Insight / Aria Operations for Logs server"
+            if listed
+            else "none yet — add one under `targets:` in ~/.vmware-log-insight/config.yaml"
+        )
+    return f"{_BASE_INSTRUCTIONS} Configured targets: {detail}.{_TARGET_RULE}"
+
+
+mcp = FastMCP("vmware-log-insight", instructions=_target_instructions())
 
 # FastMCP takes no version argument and leaves the lowlevel server's at
 # None, which makes `initialize` answer with the MCP SDK's version rather
