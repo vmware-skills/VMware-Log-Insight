@@ -1,4 +1,4 @@
-## Unreleased — searches no longer fail with HTTP 400 (issue #3)
+## v1.9.1 — searches no longer fail with HTTP 400 (issue #3)
 
 **Every `log_search` / `log_aggregate` call (and `vmware-log-insight search`) was rejected by a real appliance with
 HTTP 400, while `doctor` passed.** The query builder sent each constraint as three path segments —
@@ -15,6 +15,11 @@ form.
   segment.
 * New regression `test_constraint_wire_grammar.py` checks the path that actually leaves the HTTP client (not just
   the builder's string), including the exact request from the issue. Reverting the fix turns all three tests red.
+
+**Dependencies.** `uv.lock` moves `pyjwt` 2.13.0 → 2.15.0 (supersedes Dependabot
+[#2](https://github.com/vmware-skills/VMware-Log-Insight/pull/2); 2.15.0 carries an upstream fix for deeply nested
+token payloads). `pyjwt` reaches this skill only transitively through `mcp`; the published wheel's requirements are
+unchanged, so this only moves the locked dev/test environment.
 
 ## v1.9.0 — the MCP instructions name the configured targets
 
