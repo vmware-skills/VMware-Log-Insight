@@ -71,7 +71,7 @@ def test_401_triggers_single_reauth_then_succeeds():
         return httpx.Response(200, json={"events": []})
 
     c = _client(handler)
-    out = c.get("/events/timestamp/LAST/3600000")
+    out = c.get("/events/timestamp/LAST%203600000")
     assert out == {"events": []}
     assert state["events_calls"] == 2
 

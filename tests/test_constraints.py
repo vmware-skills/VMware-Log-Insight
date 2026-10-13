@@ -28,17 +28,17 @@ def test_parse_duration_ms_rejects_bad(bad):
 
 
 def test_defaults_to_last_hour_when_no_window():
-    assert build_constraints() == "timestamp/LAST/3600000"
+    assert build_constraints() == "timestamp/LAST%203600000"
 
 
 def test_text_becomes_contains_segment():
     c = build_constraints(text="error", last="1h")
-    assert c == "timestamp/LAST/3600000/text/CONTAINS/error"
+    assert c == "timestamp/LAST%203600000/text/CONTAINS%20error"
 
 
 def test_absolute_window():
     c = build_constraints(begin_ms=1000, end_ms=2000)
-    assert c == "timestamp/>/1000/timestamp/</2000"
+    assert c == "timestamp/%3E%201000/timestamp/%3C%202000"
 
 
 def test_last_and_absolute_are_mutually_exclusive():
@@ -49,7 +49,7 @@ def test_last_and_absolute_are_mutually_exclusive():
 def test_filters_and_value_escaping():
     c = build_constraints(last="1h", filters=[("hostname", "=", "esxi 01/x")])
     # value's space and slash are percent-encoded so they don't break the grammar
-    assert "hostname/=/esxi%2001%2Fx" in c
+    assert "hostname/%3D%20esxi%2001%2Fx" in c
 
 
 def test_unknown_operator_rejected():

@@ -136,7 +136,7 @@ vmware-log-insight mcp                                  # start MCP server (prox
 
 - **`POST /sessions returned HTTP 401`** — wrong username/password/provider. Check `config.yaml` (`provider: Local | ActiveDirectory`) and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
 - **`HTTP 503` on every call** — the appliance is starting or a service isn't ready; the error says so. Wait and retry; `doctor` reports it as a status, not a crash.
-- **`HTTP 400` on a search** — a malformed constraint. Time/field filters are path-encoded as `field/OPERATOR/value`; let the CLI/tool build them rather than hand-crafting.
+- **`HTTP 400` on a search** — a malformed constraint. Time/field filters are path-encoded as `field/<OPERATOR value>` (e.g. `timestamp/LAST%203600000`); let the CLI/tool build them rather than hand-crafting.
 - **Empty results but logs exist** — check the time window (`last`) and that the appliance actually ingests from that source; widen the window.
 - **Default port is 9543**, not 443 — set `port` in `config.yaml` if your appliance differs.
 

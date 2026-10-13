@@ -55,12 +55,14 @@ vmware-log-insight version                 # installed skill version
 
 ## Query constraint grammar
 
-Time and field filters are encoded as `/`-joined `field/OPERATOR/value` segments
-on the API path (`GET /api/v2/events/{constraints}`):
+Time and field filters are encoded as `/`-joined `field/<OPERATOR value>` pairs
+on the API path (`GET /api/v2/events/{constraints}`) — the operator and value
+share one path segment, separated by an encoded space:
 
-- Time (relative): `timestamp/LAST/<ms>` — built from `--last`.
-- Time (absolute): `timestamp/>/<begin_ms>` and `timestamp/</<end_ms>`.
-- Text: `text/CONTAINS/<value>`.
+- Time (relative): `timestamp/LAST%20<ms>` — built from `--last`.
+- Time (absolute): `timestamp/%3E%20<begin_ms>` and `timestamp/%3C%20<end_ms>`.
+- Text: `text/CONTAINS%20<value>`.
+- Existence: `<field>/EXISTS` (no value).
 - Operators: `CONTAINS`, `=`, `!=`, `<`, `>`, `EXISTS`, `LAST`.
 
 Values are URL-encoded automatically. If no time window is given, the query

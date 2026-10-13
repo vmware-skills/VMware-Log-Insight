@@ -1,15 +1,20 @@
 """Build Log Insight query constraints (the path-encoded part of
 ``GET /api/v2/events/{constraints}`` and ``/aggregated-events/{constraints}``).
 
-Log Insight encodes filters as ``/``-joined ``field/OPERATOR/value`` segments.
+Log Insight encodes each filter as ONE ``field/<OPERATOR value>`` pair: the
+field is a path segment, and the operator and its value share the next segment,
+separated by a space (``%20`` on the wire) — e.g. ``text/CONTAINS%20error``,
+``timestamp/LAST%203600000``, ``timestamp/%3E%201700000000000``. ``EXISTS``
+takes no value (``field/EXISTS``). Constraints are ``/``-joined.
+
 Time windows use the ``LAST`` operator (milliseconds) or numeric comparisons on
 ``timestamp`` (epoch ms). These are pure functions so they unit-test without a
 live appliance.
 
-NOTE: the exact wire grammar can only be confirmed against a real instance's
-``/rest-api`` reference (tracked in BACKLOG, same status as VKS /wcp/login).
-The encoding here follows the published v1/v2 docs; if a future real-hardware
-test shows a different separator, only this module changes.
+History: up to 1.9.0 this module wrote ``field/OPERATOR/value`` (three
+segments). Every search then failed with HTTP 400 on a real appliance while
+``doctor`` passed — issue vmware-skills/VMware-Log-Insight#3, where the
+reporter's working curl used ``timestamp/LAST%20360000``.
 """
 
 from __future__ import annotations
@@ -82,12 +87,17 @@ def parse_duration_ms(value: str | int) -> int:
 
 
 def _segment(field: str, operator: str, value: str) -> str:
-    """Encode one ``field/OPERATOR/value`` constraint, URL-escaping the value."""
+    """Encode one ``field/<OPERATOR value>`` constraint.
+
+    The operator and value form a single path segment joined by a space; the
+    whole segment is percent-encoded (space -> %20, '/' -> %2F, '>' -> %3E) so
+    a value can never split into an extra path segment. EXISTS has no value.
+    """
     if operator not in VALID_OPERATORS:
         raise ValueError(
             f"unknown operator {operator!r}; valid: {sorted(VALID_OPERATORS)}. "
             "Pick one of those exact strings — filters are encoded as "
-            "field/OPERATOR/value segments for log_search and log_aggregate."
+            "field/<OPERATOR value> pairs for log_search and log_aggregate."
         )
     if not field:
         raise ValueError(
@@ -95,9 +105,11 @@ def _segment(field: str, operator: str, value: str) -> str:
             "log_fields to list the fields this appliance actually extracts, "
             "then use one of those names."
         )
-    # safe="" so '/', spaces, and special chars in the value are escaped and
-    # don't break the path grammar.
-    return f"{quote(field, safe='')}/{operator}/{quote(value, safe='')}"
+    if operator == "EXISTS":
+        return f"{quote(field, safe='')}/EXISTS"
+    # safe="" so '/', spaces, and special chars are escaped and the
+    # "OPERATOR value" pair stays ONE path segment.
+    return f"{quote(field, safe='')}/{quote(f'{operator} {value}', safe='')}"
 
 
 def build_constraints(
@@ -111,11 +123,11 @@ def build_constraints(
     """Build the constraints path segment for an events/aggregated-events query.
 
     Args:
-        text: Free-text search; becomes ``text/CONTAINS/<text>``.
+        text: Free-text search; becomes ``text/CONTAINS%20<text>``.
         last: Relative time window (e.g. "1h", "30m", int seconds); becomes
-            ``timestamp/LAST/<ms>``. Mutually exclusive with begin_ms/end_ms.
+            ``timestamp/LAST%20<ms>``. Mutually exclusive with begin_ms/end_ms.
         begin_ms / end_ms: Absolute epoch-ms window; become
-            ``timestamp/>/<begin>`` and ``timestamp/</<end>``.
+            ``timestamp/%3E%20<begin>`` and ``timestamp/%3C%20<end>``.
         filters: Extra ``(field, operator, value)`` constraints.
 
     Returns:
@@ -133,15 +145,15 @@ def build_constraints(
         )
 
     if last is not None:
-        segments.append(f"timestamp/LAST/{parse_duration_ms(last)}")
+        segments.append(_segment("timestamp", "LAST", str(parse_duration_ms(last))))
     elif begin_ms is not None or end_ms is not None:
         if begin_ms is not None:
-            segments.append(f"timestamp/>/{int(begin_ms)}")
+            segments.append(_segment("timestamp", ">", str(int(begin_ms))))
         if end_ms is not None:
-            segments.append(f"timestamp/</{int(end_ms)}")
+            segments.append(_segment("timestamp", "<", str(int(end_ms))))
     else:
         # Never issue an unbounded query — default to the last hour.
-        segments.append(f"timestamp/LAST/{parse_duration_ms('1h')}")
+        segments.append(_segment("timestamp", "LAST", str(parse_duration_ms("1h"))))
 
     if text:
         segments.append(_segment("text", "CONTAINS", text))

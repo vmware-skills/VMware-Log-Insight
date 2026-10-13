@@ -14,8 +14,9 @@ Notes:
   - Base URL: https://<host>:9543/api/v2 (public API). Default port 9543, JSON.
   - Auth: POST /api/v2/sessions {username, password, provider} -> {sessionId, ttl}.
     Subsequent calls send  Authorization: Bearer <sessionId>.
-  - Query constraint syntax is encoded in the URL path as /field/OPERATOR/value
-    segments (operators: CONTAINS, =, !=, <, >, LAST <ms> for time windows).
+  - Query constraint syntax is encoded in the URL path as /field/<OPERATOR value>
+    pairs, operator and value sharing one space-separated segment (operators:
+    CONTAINS, =, !=, <, >, EXISTS (no value), LAST <ms> for time windows).
   - v2 is the current line; v1 paths remain documented and are kept here so the
     spec test recognises both. Exact v2 response schemas can only be confirmed
     against a live instance's /rest-api reference — tracked in BACKLOG (same

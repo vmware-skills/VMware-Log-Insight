@@ -78,7 +78,8 @@ def _hint_for_status(status_code: int) -> str:
     if status_code == 400:
         return (
             "Bad request — check the query constraints and parameters. Time/field "
-            "constraints are path-encoded as field/OPERATOR/value segments."
+            "constraints are path-encoded as field/<OPERATOR value> pairs "
+            "(e.g. timestamp/LAST%203600000)."
         )
     if status_code in (401, 403):
         return "Authentication/authorization failed — check the account, password, and provider."

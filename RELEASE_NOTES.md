@@ -1,3 +1,21 @@
+## Unreleased — searches no longer fail with HTTP 400 (issue #3)
+
+**Every `log_search` / `log_aggregate` call (and `vmware-log-insight search`) was rejected by a real appliance with
+HTTP 400, while `doctor` passed.** The query builder sent each constraint as three path segments —
+`timestamp/LAST/3600000`, `text/CONTAINS/error` — but Log Insight reads a constraint as a field followed by ONE
+segment holding the operator and value separated by a space: `timestamp/LAST%203600000`, `text/CONTAINS%20error`.
+`doctor` never builds a query, which is why it stayed green. Reported in
+[#3](https://github.com/vmware-skills/VMware-Log-Insight/issues/3); the reporter's hand-written curl had the right
+form.
+
+* All constraints now use `field/<OPERATOR value>`: relative window, absolute `>`/`<` window, `text CONTAINS`, and
+  every `(field, operator, value)` filter. `EXISTS` is sent as `field/EXISTS` (it previously got a trailing
+  empty segment).
+* The operator+value segment is percent-encoded as a whole, so a value containing `/` or spaces still stays one
+  segment.
+* New regression `test_constraint_wire_grammar.py` checks the path that actually leaves the HTTP client (not just
+  the builder's string), including the exact request from the issue. Reverting the fix turns all three tests red.
+
 ## v1.9.0 — the MCP instructions name the configured targets
 
 `initialize` hands the client this server's `instructions`, and for a skill whose every tool takes a target that
