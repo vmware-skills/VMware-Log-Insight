@@ -6,7 +6,7 @@ omit existing information or incorrectly state that no data was returned."
 
 A bare ``list[dict]`` gives a model nothing to distinguish a complete answer
 from page one, so it guesses — and a guess that reads "no data" looks like a
-finding. ``alert_list``, ``alert_history`` and ``log_fields`` now return the
+finding. ``list_log_alerts``, ``get_log_alert_history`` and ``list_log_fields`` now return the
 family envelope from ``vmware_policy.paginated``, so ``returned``/``total``/
 ``truncated`` are stated.
 

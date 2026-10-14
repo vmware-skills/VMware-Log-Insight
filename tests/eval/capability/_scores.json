@@ -5,11 +5,11 @@
       "detail": {
         "broken_chains": [],
         "entry_points": [
-          "alert_list",
-          "log_search",
-          "log_aggregate",
-          "log_fields",
-          "log_version"
+          "list_log_alerts",
+          "search_logs",
+          "aggregate_logs",
+          "list_log_fields",
+          "get_log_insight_version"
         ],
         "reachable_on_surface": 2,
         "reachable_only_via_description": 0,
@@ -56,9 +56,9 @@
     "error_actionability": {
       "detail": {
         "composed_hint_sites": [
-          "connection.py:210",
-          "connection.py:310",
-          "connection.py:289"
+          "connection.py:211",
+          "connection.py:311",
+          "connection.py:290"
         ],
         "dead_end_count": 0,
         "dead_end_errors": [],
@@ -77,11 +77,11 @@
     "manifest_context_headroom": {
       "detail": {
         "heaviest_tools": {
-          "alert_history": 287,
-          "alert_list": 292,
-          "log_aggregate": 594,
-          "log_fields": 232,
-          "log_search": 560
+          "aggregate_logs": 594,
+          "get_log_alert_history": 287,
+          "list_log_alerts": 292,
+          "list_log_fields": 232,
+          "search_logs": 560
         },
         "manifest_tokens": 2337,
         "mean_tokens_per_tool": 333.9,
@@ -97,7 +97,7 @@
       "detail": {
         "undocumented_by_tool": {},
         "value_set_candidates": {
-          "log_aggregate.last": [
+          "aggregate_logs.last": [
             "2h",
             "30m",
             "7d"
@@ -113,8 +113,8 @@
       "detail": {
         "ceiling": 350,
         "over_ceiling": {
-          "log_aggregate": 594,
-          "log_search": 560
+          "aggregate_logs": 594,
+          "search_logs": 560
         }
       },
       "maximum": 7,
@@ -150,14 +150,14 @@
         "budget_chars": 300,
         "over_budget": [],
         "remedy_after_interpolation": [
-          "config.py:255",
-          "config.py:226",
-          "constraints.py:35",
-          "constraints.py:76",
-          "constraints.py:87",
-          "constraints.py:42",
-          "constraints.py:60",
-          "constraints.py:70",
+          "config.py:265",
+          "config.py:234",
+          "constraints.py:40",
+          "constraints.py:81",
+          "constraints.py:97",
+          "constraints.py:47",
+          "constraints.py:65",
+          "constraints.py:75",
           "aggregate.py:91",
           "aggregate.py:98"
         ]
@@ -186,15 +186,15 @@
         },
         "tools_graded": 7,
         "weakest_tools": {
-          "alert_get": [],
-          "alert_history": [
+          "aggregate_logs": [],
+          "get_log_alert": [],
+          "get_log_alert_history": [
             "next_hop"
           ],
-          "alert_list": [],
-          "log_aggregate": [],
-          "log_fields": [],
-          "log_search": [],
-          "log_version": []
+          "get_log_insight_version": [],
+          "list_log_alerts": [],
+          "list_log_fields": [],
+          "search_logs": []
         }
       },
       "maximum": 42,

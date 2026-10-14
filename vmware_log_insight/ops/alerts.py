@@ -69,7 +69,7 @@ def get_alert(client: LogInsightClient, alert_id: str) -> dict:
     """
     if not alert_id:
         raise ValueError(
-            "alert_id must not be empty: expected an alert id. Run alert_list "
+            "alert_id must not be empty: expected an alert id. Run list_log_alerts "
             "(or `vmware-log-insight alert list`) and copy an exact value from "
             "a row's 'id' field."
         )
@@ -98,9 +98,9 @@ def get_alert_history(
     """
     if not alert_id:
         raise ValueError(
-            "alert_id must not be empty: expected an alert id. Run alert_list "
+            "alert_id must not be empty: expected an alert id. Run list_log_alerts "
             "(or `vmware-log-insight alert list`) and copy an exact value from "
-            "a row's 'id' field, then pass it to alert_history."
+            "a row's 'id' field, then pass it to get_log_alert_history."
         )
     data = client.get(f"/alerts/{alert_id}/history")
     records = data.get("history", data.get("records", [])) or []

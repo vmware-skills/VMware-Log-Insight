@@ -8,9 +8,9 @@ import mcp,
 
 Tool categories
 ---------------
-* **Logs** (4, read-only): log_search, log_aggregate, log_fields, log_version
+* **Logs** (4, read-only): search_logs, aggregate_logs, list_log_fields, get_log_insight_version
   — ``vmware_log_insight/mcp_server/tools/logs.py``
-* **Alerts** (3, read-only): alert_list, alert_get, alert_history
+* **Alerts** (3, read-only): list_log_alerts, get_log_alert, get_log_alert_history
   — ``vmware_log_insight/mcp_server/tools/alerts.py``
 
 Security: stdio transport (local only, no listener); credentials come from
@@ -44,17 +44,17 @@ from vmware_log_insight.mcp_server.tools import (  # noqa: F401
 )
 
 # Re-export every tool function so `vmware_log_insight.mcp_server.server.<tool>` resolves (tests
-# call e.g. `server.log_search(...)` and patch `server._get_connection`).
+# call e.g. `server.search_logs(...)` and patch `server._get_connection`).
 from vmware_log_insight.mcp_server.tools.alerts import (  # noqa: F401
-    alert_get,
-    alert_history,
-    alert_list,
+    get_log_alert,
+    get_log_alert_history,
+    list_log_alerts,
 )
 from vmware_log_insight.mcp_server.tools.logs import (  # noqa: F401
-    log_aggregate,
-    log_fields,
-    log_search,
-    log_version,
+    aggregate_logs,
+    get_log_insight_version,
+    list_log_fields,
+    search_logs,
 )
 
 
@@ -100,13 +100,13 @@ __all__ = [
     "_environment_for",
     "_safe_error",
     "_get_connection",
-    "log_search",
-    "log_aggregate",
-    "log_fields",
-    "log_version",
-    "alert_list",
-    "alert_get",
-    "alert_history",
+    "search_logs",
+    "aggregate_logs",
+    "list_log_fields",
+    "get_log_insight_version",
+    "list_log_alerts",
+    "get_log_alert",
+    "get_log_alert_history",
 ]
 
 

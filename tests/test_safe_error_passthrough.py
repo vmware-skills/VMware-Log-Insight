@@ -64,7 +64,7 @@ def test_missing_password_names_the_variable_to_set(monkeypatch):
     with pytest.raises(ConfigError) as exc_info:
         TargetConfig(host="h", username="u").get_password("prod")
 
-    assert ENV_KEY in _safe_error(exc_info.value, "log_search")
+    assert ENV_KEY in _safe_error(exc_info.value, "search_logs")
 
 
 def test_config_error_is_still_an_oserror():
@@ -74,7 +74,7 @@ def test_config_error_is_still_an_oserror():
 
 def test_api_error_keeps_its_message():
     """The connection layer authors these to carry a corrected next step."""
-    assert _safe_error(LogInsightApiError(TEACHING), "log_search") == TEACHING
+    assert _safe_error(LogInsightApiError(TEACHING), "search_logs") == TEACHING
 
 
 @pytest.mark.parametrize(
@@ -82,7 +82,7 @@ def test_api_error_keeps_its_message():
     [ValueError, KeyError, FileNotFoundError, PermissionError, ConnectionError, ConfigError],
 )
 def test_deliberate_errors_pass_through(exc_type):
-    assert "prod" in _safe_error(exc_type(TEACHING), "log_search")
+    assert "prod" in _safe_error(exc_type(TEACHING), "search_logs")
 
 
 def test_os_level_failures_no_longer_carry_the_hostname():
@@ -112,23 +112,23 @@ def test_tls_errors_are_reduced_despite_inheriting_valueerror():
     )
     assert isinstance(exc, ValueError), "the co-inheritance this guard exists for is gone"
 
-    out = _safe_error(exc, "log_search")
+    out = _safe_error(exc, "search_logs")
     assert out == "SSLCertVerificationError: operation failed."
     assert HOSTNAME not in out
 
 
 def test_unplanned_exceptions_are_still_reduced():
     """The redaction this allowlist exists for has to keep working."""
-    out = _safe_error(RuntimeError("https://admin:hunter2@li.internal/api/x"), "log_search")
+    out = _safe_error(RuntimeError("https://admin:hunter2@li.internal/api/x"), "search_logs")
     assert out == "RuntimeError: operation failed."
     assert "hunter2" not in out
 
 
 def test_runtime_error_is_not_a_teaching_error():
     """RuntimeError is the generic catch-all — allowlisting it reopens the leak."""
-    assert _safe_error(RuntimeError(TEACHING), "log_search") == "RuntimeError: operation failed."
+    assert _safe_error(RuntimeError(TEACHING), "search_logs") == "RuntimeError: operation failed."
 
 
 def test_message_is_still_truncated():
     """Length capping is the other half of the guard."""
-    assert len(_safe_error(LogInsightApiError("x" * 900), "log_search")) <= 300
+    assert len(_safe_error(LogInsightApiError("x" * 900), "search_logs")) <= 300

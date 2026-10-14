@@ -18,7 +18,7 @@ family. **Strictly non-destructive**: it queries, it never writes.
 | Raw centralized logs + spikes | **vmware-log-insight** (this) | 7 |
 | vCenter events & alarms | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) | 27 |
 | Metrics, anomalies, capacity | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) | 28 |
-| Incident correlation / root cause | [vmware-debug](https://github.com/vmware-skills/VMware-Debug) — feed it `log_search` output | 2 |
+| Incident correlation / root cause | [vmware-debug](https://github.com/vmware-skills/VMware-Debug) — feed it `search_logs` output | 2 |
 | VM lifecycle / operations | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) | 49 |
 
 ## Install
@@ -64,17 +64,17 @@ pip install --no-index --find-links dist vmware-log-insight
 
 | Tool | What |
 |---|---|
-| `log_search` | Search events by time window + text + filters |
-| `log_aggregate` | Count/aggregate over time bins, with z-score spike detection |
-| `log_fields` | List extracted fields usable in filters |
-| `log_version` | Appliance version/build |
-| `alert_list` / `alert_get` / `alert_history` | Query defined alerts and their trigger history |
+| `search_logs` | Search events by time window + text + filters |
+| `aggregate_logs` | Count/aggregate over time bins, with z-score spike detection |
+| `list_log_fields` | List extracted fields usable in filters |
+| `get_log_insight_version` | Appliance version/build |
+| `list_log_alerts` / `get_log_alert` / `get_log_alert_history` | Query defined alerts and their trigger history |
 
 ## Workflows
 
 - **Find errors fast** — `vmware-log-insight search -q error -l 1h`.
 - **Where did logs burst?** — `vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`, read `spikes[]`, then `search` the spike window.
-- **Root cause** — pass `log_search` results (plus vCenter events from vmware-monitor and metrics from vmware-aria) to **vmware-debug** `incident_timeline`.
+- **Root cause** — pass `search_logs` results (plus vCenter events from vmware-monitor and metrics from vmware-aria) to **vmware-debug** `incident_timeline`.
 
 ## Troubleshooting
 

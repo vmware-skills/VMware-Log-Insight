@@ -1,3 +1,26 @@
+## v2.0.0 — MCP tools renamed verb-first
+
+**Breaking for MCP clients: all 7 tool names changed.** The family now uses one naming convention, verb
+first (`list_…`, `get_…`, `search_…`), so an agent that learns one skill can guess the next. Where two skills
+would otherwise ship the same name, a domain word is added: vmware-aria already has `get_alert` /
+`list_alerts`, so this skill's alert tools are `log_` alerts.
+
+| Old name (≤ 1.9.1) | New name (2.0.0) |
+|---|---|
+| `log_search` | `search_logs` |
+| `log_aggregate` | `aggregate_logs` |
+| `log_fields` | `list_log_fields` |
+| `log_version` | `get_log_insight_version` |
+| `alert_list` | `list_log_alerts` |
+| `alert_get` | `get_log_alert` |
+| `alert_history` | `get_log_alert_history` |
+
+- Parameters, results and behaviour are unchanged (including the v1.9.1 query-constraint fix for issue #3).
+  The audit log records the new names; CLI reads record their MCP twin's new name.
+- **CLI commands are unchanged** (`vmware-log-insight search`, `aggregate`, `fields`, `alert list|get|history`).
+- Deny rules in `~/.vmware/rules.yaml` written with old names keep working with vmware-policy ≥ 1.18.0 (it
+  matches both names); `vmware-audit policy` lists any rule that now matches more.
+
 ## v1.9.1 — searches no longer fail with HTTP 400 (issue #3)
 
 **Every `log_search` / `log_aggregate` call (and `vmware-log-insight search`) was rejected by a real appliance with

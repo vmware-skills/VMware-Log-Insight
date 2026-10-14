@@ -125,7 +125,7 @@ def doctor(
 
 @app.command()
 @_friendly_errors
-@audited("log_search")
+@audited("search_logs")
 def search(
     text: Annotated[str | None, typer.Option("--text", "-q", help="Free-text search (CONTAINS)")] = None,
     last: Annotated[str, typer.Option("--last", "-l", help="Relative window: 1h, 30m, 7d")] = "1h",
@@ -152,7 +152,7 @@ def search(
 
 @app.command()
 @_friendly_errors
-@audited("log_aggregate")
+@audited("aggregate_logs")
 def aggregate(
     text: Annotated[str | None, typer.Option("--text", "-q", help="Free-text search")] = None,
     last: Annotated[str, typer.Option("--last", "-l", help="Relative window: 1h, 30m, 7d")] = "1h",
@@ -173,7 +173,7 @@ def aggregate(
 
 @app.command()
 @_friendly_errors
-@audited("log_fields")
+@audited("list_log_fields")
 def fields(
     name: Annotated[str | None, typer.Option("--name", help="Filter by name substring")] = None,
     target: TargetOption = None,
@@ -193,7 +193,7 @@ def fields(
 
 @alert_app.command("list")
 @_friendly_errors
-@audited("alert_list")
+@audited("list_log_alerts")
 def alert_list_cmd(
     name: Annotated[str | None, typer.Option("--name", help="Filter by name substring")] = None,
     limit: Annotated[int, typer.Option("--limit", "-n")] = 50,
@@ -220,7 +220,7 @@ def alert_list_cmd(
 
 @alert_app.command("get")
 @_friendly_errors
-@audited("alert_get")
+@audited("get_log_alert")
 def alert_get_cmd(alert_id: str, target: TargetOption = None, config: ConfigOption = None) -> None:
     """Get full details for one alert by id."""
     from vmware_log_insight.ops.alerts import get_alert
@@ -231,7 +231,7 @@ def alert_get_cmd(alert_id: str, target: TargetOption = None, config: ConfigOpti
 
 @alert_app.command("history")
 @_friendly_errors
-@audited("alert_history")
+@audited("get_log_alert_history")
 def alert_history_cmd(
     alert_id: str,
     limit: Annotated[int, typer.Option("--limit", "-n")] = 50,

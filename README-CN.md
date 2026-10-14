@@ -16,7 +16,7 @@ VM syslog 的日志平台）的**只读**日志检索与聚合。VMware skill �
 | 原始集中日志 + 突刺 | **vmware-log-insight**（本项目） | 7 |
 | vCenter 事件与告警 | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) | 27 |
 | 指标 / 异常 / 容量 | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) | 28 |
-| 故障关联 / 根因 | [vmware-debug](https://github.com/vmware-skills/VMware-Debug)（把 `log_search` 结果喂给它） | 2 |
+| 故障关联 / 根因 | [vmware-debug](https://github.com/vmware-skills/VMware-Debug)（把 `search_logs` 结果喂给它） | 2 |
 | VM 生命周期 / 运维 | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) | 49 |
 
 ## 安装
@@ -32,14 +32,14 @@ vmware-log-insight doctor
 
 ## MCP 工具（7 个，全只读）
 
-`log_search`（按时间窗 + 文本 + 字段过滤检索）、`log_aggregate`（按时间桶聚合 + z-score
-突刺检测）、`log_fields`、`log_version`、`alert_list` / `alert_get` / `alert_history`。
+`search_logs`（按时间窗 + 文本 + 字段过滤检索）、`aggregate_logs`（按时间桶聚合 + z-score
+突刺检测）、`list_log_fields`、`get_log_insight_version`、`list_log_alerts` / `get_log_alert` / `get_log_alert_history`。
 
 ## 常用工作流
 
 - **快速找错**：`vmware-log-insight search -q error -l 1h`
 - **日志何时突增**：`vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`，看 `spikes[]`，再 `search` 突刺时间窗
-- **根因定位**：把 `log_search` 结果（连同 vmware-monitor 的 vCenter 事件、vmware-aria 的指标）交给 **vmware-debug** 的 `incident_timeline`
+- **根因定位**：把 `search_logs` 结果（连同 vmware-monitor 的 vCenter 事件、vmware-aria 的指标）交给 **vmware-debug** 的 `incident_timeline`
 
 ## 安全
 

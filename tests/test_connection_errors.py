@@ -113,7 +113,7 @@ def test_transport_error_teaches_without_quoting_the_certificate():
     with pytest.raises(LogInsightApiError) as ei:
         c.get("/fields")
 
-    delivered = _safe_error(ei.value, "log_fields")
+    delivered = _safe_error(ei.value, "list_log_fields")
     assert subject not in delivered, "the certificate subject reached the agent"
     assert "_ssl.c" not in delivered, "raw ssl error text reached the agent"
     # The remedy is what the message exists to deliver, so it must survive the cap.

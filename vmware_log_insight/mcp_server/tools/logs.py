@@ -1,4 +1,4 @@
-"""LOG tools (4, read-only): log_search, log_aggregate, log_fields, log_version.
+"""LOG tools (4, read-only): search_logs, aggregate_logs, list_log_fields, get_log_insight_version.
 
 Each resolves the connection/error helpers through ``vmware_log_insight.mcp_server.server``
 at call
@@ -16,7 +16,7 @@ _READ = {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True,
 
 @mcp.tool(annotations=_READ)
 @vmware_tool(risk_level="low")
-def log_search(
+def search_logs(
     text: Optional[str] = None,
     last: Optional[str] = None,
     begin_ms: Optional[int] = None,
@@ -28,7 +28,7 @@ def log_search(
 
     WHEN: to find the actual log lines behind an incident (e.g. what vmkernel
     logged during a storage event). For "where did logs burst?" use
-    log_aggregate instead; for vCenter alarms use vmware-monitor.
+    aggregate_logs instead; for vCenter alarms use vmware-monitor.
 
     RETURNS: {count, complete (False if truncated), constraints,
     events: [{timestamp_ms, text, fields}]}. Feed events to vmware-debug
@@ -38,7 +38,7 @@ def log_search(
         text: Free-text substring matched against the event message with the
             CONTAINS operator — not a regex and not a full query expression.
             Omit to match every event in the window. To filter on an extracted
-            field instead, discover names with log_fields; this tool exposes no
+            field instead, discover names with list_log_fields; this tool exposes no
             field-filter parameter.
         last: Relative window ending now, as a quantity plus a unit suffix —
             s, m, h or d ("30m", "2h", "7d") — or a bare number of seconds.
@@ -71,12 +71,12 @@ def log_search(
             text=text, last=last, begin_ms=begin_ms, end_ms=end_ms, limit=limit,
         )
     except Exception as e:
-        return {"error": server._safe_error(e, "log_search"), "hint": "Run 'vmware-log-insight doctor'."}
+        return {"error": server._safe_error(e, "search_logs"), "hint": "Run 'vmware-log-insight doctor'."}
 
 
 @mcp.tool(annotations=_READ)
 @vmware_tool(risk_level="low")
-def log_aggregate(
+def aggregate_logs(
     text: Optional[str] = None,
     last: Optional[str] = None,
     begin_ms: Optional[int] = None,
@@ -87,7 +87,7 @@ def log_aggregate(
 ) -> dict:
     """[READ] Aggregate matching events into a time series and detect spikes.
 
-    WHEN: to find when/whether log volume burst without pulling raw events. Follow up with log_search on the spike window.
+    WHEN: to find when/whether log volume burst without pulling raw events. Follow up with search_logs on the spike window.
 
     RETURNS: {aggregation, bin_width_ms, constraints, bins:[{timestamp_ms,
     value}], spikes:[{timestamp_ms, value, zscore}]}. A bin is flagged as a
@@ -98,7 +98,7 @@ def log_aggregate(
 
     Args:
         text: Free-text substring matched with CONTAINS, exactly as in
-            log_search. Omit to aggregate every event in the window.
+            search_logs. Omit to aggregate every event in the window.
         last: Relative window ending now — "30m", "2h", "7d" (units s/m/h/d) or
             a bare number of seconds. Cannot be combined with begin_ms/end_ms.
             Omit all three and the window defaults to the last hour.
@@ -131,16 +131,16 @@ def log_aggregate(
             aggregation=aggregation, bin_width_ms=bin_width_ms,
         )
     except Exception as e:
-        return {"error": server._safe_error(e, "log_aggregate"), "hint": "Run 'vmware-log-insight doctor'."}
+        return {"error": server._safe_error(e, "aggregate_logs"), "hint": "Run 'vmware-log-insight doctor'."}
 
 
 @mcp.tool(annotations=_READ)
 @vmware_tool(risk_level="low")
-def log_fields(name_filter: Optional[str] = None, target: Optional[str] = None) -> dict:
+def list_log_fields(name_filter: Optional[str] = None, target: Optional[str] = None) -> dict:
     """[READ] List the extracted fields available to use in query filters.
 
-    Use this to discover valid field names before filtering log_search /
-    log_aggregate. Returns the family list envelope {items, returned, limit,
+    Use this to discover valid field names before filtering search_logs /
+    aggregate_logs. Returns the family list envelope {items, returned, limit,
     total, truncated, hint}; each item is {name}. No limit — every matching
     field is returned, so truncated is always false: this is the complete field
     list, not a page. Read-only.
@@ -162,16 +162,16 @@ def log_fields(name_filter: Optional[str] = None, target: Optional[str] = None) 
 
         return list_fields(server._get_connection(target), name_filter=name_filter)
     except Exception as e:
-        return {"error": server._safe_error(e, "log_fields"), "hint": "Run 'vmware-log-insight doctor'."}
+        return {"error": server._safe_error(e, "list_log_fields"), "hint": "Run 'vmware-log-insight doctor'."}
 
 
 @mcp.tool(annotations=_READ)
 @vmware_tool(risk_level="low")
-def log_version(target: Optional[str] = None) -> dict:
+def get_log_insight_version(target: Optional[str] = None) -> dict:
     """[READ] Return the Log Insight appliance version/build (diagnostics and
     query-syntax compatibility). Returns {version, release_name, build}. Use
     this first when a query behaves unexpectedly, to confirm the appliance
-    version before trusting log_search. Read-only.
+    version before trusting search_logs. Read-only.
 
     Args:
         target: Log Insight target name as spelled in
@@ -187,4 +187,4 @@ def log_version(target: Optional[str] = None) -> dict:
 
         return get_version(server._get_connection(target))
     except Exception as e:
-        return {"error": server._safe_error(e, "log_version"), "hint": "Run 'vmware-log-insight doctor'."}
+        return {"error": server._safe_error(e, "get_log_insight_version"), "hint": "Run 'vmware-log-insight doctor'."}

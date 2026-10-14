@@ -12,8 +12,8 @@ from vmware_log_insight.mcp_server.server import mcp
 from vmware_log_insight import config
 
 _EXPECTED_TOOLS = {
-    "log_search", "log_aggregate", "log_fields", "log_version",
-    "alert_list", "alert_get", "alert_history",
+    "search_logs", "aggregate_logs", "list_log_fields", "get_log_insight_version",
+    "list_log_alerts", "get_log_alert", "get_log_alert_history",
 }
 
 
@@ -57,8 +57,8 @@ def test_a_returned_error_is_audited_as_a_failure(monkeypatch):
     import vmware_log_insight.mcp_server.server as server
     from vmware_log_insight.connection import LogInsightApiError
 
-    assert getattr(server.log_fields, "_is_vmware_tool", False), (
-        "log_fields is not wrapped by @vmware_tool — this test would pass "
+    assert getattr(server.list_log_fields, "_is_vmware_tool", False), (
+        "list_log_fields is not wrapped by @vmware_tool — this test would pass "
         "without exercising the audit path it exists to check"
     )
 
@@ -74,7 +74,7 @@ def test_a_returned_error_is_audited_as_a_failure(monkeypatch):
         raise LogInsightApiError("Log Insight returned HTTP 404.", status_code=404)
 
     monkeypatch.setattr(server, "_get_connection", boom)
-    result = server.log_fields()
+    result = server.list_log_fields()
 
     assert result.get("error"), "the tool did not return the error envelope"
     assert rows, "the wrapper recorded no audit row at all"

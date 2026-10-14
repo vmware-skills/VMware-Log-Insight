@@ -90,14 +90,14 @@ def aggregate_events(
     if aggregation not in VALID_AGGREGATIONS:
         raise ValueError(
             f"unknown aggregation {aggregation!r}; valid: "
-            f"{sorted(VALID_AGGREGATIONS)}. Re-run log_aggregate with one of "
+            f"{sorted(VALID_AGGREGATIONS)}. Re-run aggregate_logs with one of "
             "those exact strings; COUNT is the default and answers "
             "'how many events per bin'."
         )
     if bin_width_ms <= 0:
         raise ValueError(
             f"bin_width_ms must be positive (got {bin_width_ms}). Re-run "
-            "log_aggregate with bin_width_ms=60000 for 1-minute bins, or a "
+            "aggregate_logs with bin_width_ms=60000 for 1-minute bins, or a "
             "larger value for coarser bins over a long window."
         )
 

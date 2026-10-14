@@ -5,17 +5,17 @@ base `https://<host>:9543/api/v2`, session auth (Bearer). All tools read-only.
 
 | Tool | Endpoint | What it returns | Typical response tokens |
 |---|---|---|---|
-| `log_search` | GET /events/{constraints} | `{count, complete, constraints, events:[{timestamp_ms, text, fields}]}` | 400–4000 (scales with limit) |
-| `log_aggregate` | GET /aggregated-events/{constraints} | `{aggregation, bin_width_ms, bins:[...], spikes:[...]}` | 200–1500 |
-| `log_fields` | GET /fields | envelope of `[{name}]` | 100–800 |
-| `log_version` | GET /version | `{version, release_name, build}` | ~40 |
-| `alert_list` | GET /alerts | envelope of `[{id, name, enabled, info}]` | 100–1500 |
-| `alert_get` | GET /alerts/{id} | `{id, name, enabled, info, raw_keys}` | 100–400 |
-| `alert_history` | GET /alerts/{id}/history | envelope of `[{timestamp_ms, info}]` | 100–1500 |
+| `search_logs` | GET /events/{constraints} | `{count, complete, constraints, events:[{timestamp_ms, text, fields}]}` | 400–4000 (scales with limit) |
+| `aggregate_logs` | GET /aggregated-events/{constraints} | `{aggregation, bin_width_ms, bins:[...], spikes:[...]}` | 200–1500 |
+| `list_log_fields` | GET /fields | envelope of `[{name}]` | 100–800 |
+| `get_log_insight_version` | GET /version | `{version, release_name, build}` | ~40 |
+| `list_log_alerts` | GET /alerts | envelope of `[{id, name, enabled, info}]` | 100–1500 |
+| `get_log_alert` | GET /alerts/{id} | `{id, name, enabled, info, raw_keys}` | 100–400 |
+| `get_log_alert_history` | GET /alerts/{id}/history | envelope of `[{timestamp_ms, info}]` | 100–1500 |
 
 ## List envelope
 
-`log_fields`, `alert_list` and `alert_history` return the family list envelope
+`list_log_fields`, `list_log_alerts` and `get_log_alert_history` return the family list envelope
 rather than a bare list — read the rows from `items`:
 
 ```json
@@ -37,15 +37,15 @@ match count is already in hand. Two consequences worth relying on —
   narrow `name_filter`.
 - A page that exactly fills `limit` is still reported `truncated: false` when it
   is genuinely the whole set, so no redundant follow-up query is needed.
-- `log_fields` takes no `limit` at all, so it is always `truncated: false` —
+- `list_log_fields` takes no `limit` at all, so it is always `truncated: false` —
   that is the complete field list, not a page of it.
 
 ## High-signal design
 
-- **Search over list**: `log_search` defaults to `limit=50` and a 1-hour window;
+- **Search over list**: `search_logs` defaults to `limit=50` and a 1-hour window;
   narrow with `text`/filters rather than raising the limit. `complete=False`
   signals server-side truncation.
-- **Spike detection in-tool**: `log_aggregate` returns z-score-flagged `spikes[]`
+- **Spike detection in-tool**: `aggregate_logs` returns z-score-flagged `spikes[]`
   so the agent gets "where did logs burst?" without scanning raw events.
 - **Field flattening**: Log Insight's `fields: [{name, content}]` is flattened to
   a `{name: content}` dict; all text is `sanitize()`d (truncated + control-char stripped).
