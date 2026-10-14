@@ -11,6 +11,14 @@ Read-only log search and aggregation for **VMware Aria Operations for Logs**
 hosts, vCenter, and VMs. The centralized-log data source for the VMware skill
 family. **Strictly non-destructive**: it queries, it never writes.
 
+## Upgrading to 2.0
+
+2.0 renames 7 MCP tools so every name starts with a verb (e.g. `alert_get` → `get_log_alert`, `alert_history` → `get_log_alert_history`, `alert_list` → `list_log_alerts`). The full old → new table is in
+[RELEASE_NOTES.md](RELEASE_NOTES.md#v200--mcp-tools-renamed-verb-first). Nothing else changes: same tools, parameters,
+safety gates and CLI commands. If an agent prompt, script or `~/.vmware/rules.yaml` names a tool, update it — though deny
+rules written with the old names keep working with vmware-policy ≥ 1.18 (`vmware-audit policy` lists any rule the
+renames widened), and vmware-pilot ≥ 1.13 translates old names in saved workflows.
+
 ## Companion Skills
 
 | Need | Skill | Tools |
