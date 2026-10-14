@@ -89,7 +89,7 @@ alarms (monitor) or metric anomalies (aria). This skill only reads the log store
 ### 3. Correlate logs into a root-cause timeline
 1. `search_logs` / `aggregate_logs` here for the log signal.
 2. Pull vCenter events (vmware-monitor) and metrics/anomalies (vmware-aria) for the same window/entity.
-3. Hand all of them to **vmware-debug** `incident_timeline` (normalise to its event envelope) to rank root causes.
+3. Hand all of them to **vmware-debug** `build_incident_timeline` (normalise to its event envelope) to rank root causes.
 
 ## Usage Mode
 

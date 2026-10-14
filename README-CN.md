@@ -46,7 +46,7 @@ vmware-log-insight doctor
 
 - **快速找错**：`vmware-log-insight search -q error -l 1h`
 - **日志何时突增**：`vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`，看 `spikes[]`，再 `search` 突刺时间窗
-- **根因定位**：把 `search_logs` 结果（连同 vmware-monitor 的 vCenter 事件、vmware-aria 的指标）交给 **vmware-debug** 的 `incident_timeline`
+- **根因定位**：把 `search_logs` 结果（连同 vmware-monitor 的 vCenter 事件、vmware-aria 的指标）交给 **vmware-debug** 的 `build_incident_timeline`
 
 ## 安全
 

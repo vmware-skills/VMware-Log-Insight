@@ -82,7 +82,7 @@ pip install --no-index --find-links dist vmware-log-insight
 
 - **Find errors fast** — `vmware-log-insight search -q error -l 1h`.
 - **Where did logs burst?** — `vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`, read `spikes[]`, then `search` the spike window.
-- **Root cause** — pass `search_logs` results (plus vCenter events from vmware-monitor and metrics from vmware-aria) to **vmware-debug** `incident_timeline`.
+- **Root cause** — pass `search_logs` results (plus vCenter events from vmware-monitor and metrics from vmware-aria) to **vmware-debug** `build_incident_timeline`.
 
 ## Troubleshooting
 
