@@ -87,7 +87,7 @@ def _safe_error(exc: Exception, tool: str) -> str:
 _BASE_INSTRUCTIONS = (
     "VMware Aria Operations for Logs (vRealize Log Insight): read-only log "
     "search, aggregation/spike detection, field discovery, and alert queries. "
-    "Feed results to vmware-debug's incident_timeline to correlate with events "
+    "Feed results to vmware-debug's build_incident_timeline to correlate with events "
     "from other sources. For vCenter events/alarms use vmware-monitor; for "
     "metrics/anomalies use vmware-aria."
 )

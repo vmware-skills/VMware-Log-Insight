@@ -32,7 +32,7 @@ def search_logs(
 
     RETURNS: {count, complete (False if truncated), constraints,
     events: [{timestamp_ms, text, fields}]}. Feed events to vmware-debug
-    incident_timeline to correlate across sources. Read-only.
+    build_incident_timeline to correlate across sources. Read-only.
 
     Args:
         text: Free-text substring matched against the event message with the
