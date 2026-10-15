@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-uv tool install vmware-log-insight==2.0.0
+uv tool install vmware-log-insight==2.1.0
 mkdir -p ~/.vmware-log-insight
 cp config.example.yaml ~/.vmware-log-insight/config.yaml
 ```
@@ -84,7 +84,7 @@ reachability (TCP 9543), authentication, appliance version, MCP server import.
 ```json
 {
   "command": "uvx",
-  "args": ["--from", "vmware-log-insight==2.0.0", "vmware-log-insight-mcp"],
+  "args": ["--from", "vmware-log-insight==2.1.0", "vmware-log-insight-mcp"],
   "env": { "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml" }
 }
 ```
@@ -108,3 +108,8 @@ If you installed with `uv tool install`, prefer the entry point `vmware-log-insi
    (truncation + C0/C1 control-char stripping).
 6. **Least privilege** — use a read-only Log Insight service account; this skill
    only reads (events, aggregations, fields, alerts) and never writes.
+
+**The account is the boundary.** This skill has no write tools, but an agent that can run shell commands can reach
+the platform without it (SSH, curl, govc, PowerCLI). Give the service account only the read privileges it needs;
+nothing in the skill can stop the same credentials being used another way.
+
