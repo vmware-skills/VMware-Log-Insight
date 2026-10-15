@@ -11,10 +11,12 @@ keep resolving.
 
 import logging
 import ssl
+import threading
 from typing import Any, Optional
 
 from mcp.server.fastmcp import FastMCP
 from vmware_policy import sanitize
+from vmware_policy.pool import PoolTimeoutError
 
 from vmware_log_insight.config import ConfigError, load_config
 from vmware_log_insight.connection import ConnectionManager, LogInsightApiError
@@ -78,6 +80,9 @@ def _safe_error(exc: Exception, tool: str) -> str:
             FileNotFoundError,
             PermissionError,
             ConnectionError,
+            # Authored by vmware_policy.pool: names the target and the remedy
+            # (retry, or raise VMWARE_MCP_POOL_SIZE); a RuntimeError, so listed by name.
+            PoolTimeoutError,
         ),
     ):
         return sanitize(str(exc), 300)
@@ -148,14 +153,23 @@ mcp = FastMCP("vmware-log-insight", instructions=_target_instructions())
 mcp._mcp_server.version = __version__
 
 _conn_mgr: Optional[ConnectionManager] = None
+# Tools run in worker threads on a network transport: without the lock two
+# first calls could each build a manager, and one manager's pool would be lost
+# with its sessions still logged in.
+_conn_mgr_lock = threading.Lock()
 
 
 def _get_connection(target: Optional[str] = None) -> Any:
     """Return a LogInsightClient, lazily initialising the connection manager."""
     global _conn_mgr  # noqa: PLW0603
-    if _conn_mgr is None:
-        # No env-var read here: load_config resolves the path (explicit arg,
-        # then the environment, then the default). This was a third copy of
-        # that rule, and copies are how the doctor's copy drifted (形态 #6).
-        _conn_mgr = ConnectionManager(load_config())
-    return _conn_mgr.connect(target)
+    mgr = _conn_mgr
+    if mgr is None:
+        with _conn_mgr_lock:
+            if _conn_mgr is None:
+                # No env-var read here: load_config resolves the path (explicit
+                # arg, then the environment, then the default). This was a
+                # third copy of that rule, and copies are how the doctor's copy
+                # drifted (形态 #6).
+                _conn_mgr = ConnectionManager(load_config())
+            mgr = _conn_mgr
+    return mgr.connect(target)

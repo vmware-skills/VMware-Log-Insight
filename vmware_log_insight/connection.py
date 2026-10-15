@@ -21,6 +21,7 @@ import time
 from typing import Any
 
 import httpx
+from vmware_policy.pool import SessionPool
 
 from vmware_log_insight.config import AppConfig, TargetConfig, load_config
 
@@ -364,11 +365,27 @@ class LogInsightClient:
 
 
 class ConnectionManager:
-    """Manages connections to multiple Log Insight targets."""
+    """Manages connections to multiple Log Insight targets.
+
+    Clients come from a per-target :class:`~vmware_policy.pool.SessionPool`
+    (HLD §16 D-13(2)). An MCP call on a network transport holds one client for
+    its whole body, so two calls never share a session (a client re-acquires
+    its sessionId in place near expiry and on a 401). Outside a call (CLI,
+    stdio) each target keeps one cached client, as before.
+    """
 
     def __init__(self, config: AppConfig) -> None:
         self._config = config
-        self._clients: dict[str, LogInsightClient] = {}
+        self._pool: SessionPool[LogInsightClient] = SessionPool(
+            "vmware-log-insight",
+            create=self._new_client,
+            # The cached probe: a burst of calls does not re-probe
+            # GET /sessions/current within _LIVENESS_TTL_SEC of a success.
+            is_alive=lambda client: client.is_alive_cached(),
+            # close() only drops the local sessionId and the connection pool
+            # (no logout endpoint is verified), so it is safe on an expired one.
+            close=lambda client: client.close(),
+        )
 
     @classmethod
     def from_config(cls, config: AppConfig | None = None) -> ConnectionManager:
@@ -389,14 +406,7 @@ class ConnectionManager:
                 f"`vmware-log-insight doctor`. Available: {configured}"
             )
 
-        if name in self._clients:
-            if self._clients[name].is_alive_cached():
-                return self._clients[name]
-            self._clients[name].close()
-            del self._clients[name]
-
-        target_cfg = self._config.get_target(name)
-        if target_cfg is None:
+        if self._config.get_target(name) is None:
             available = ", ".join(self._config.targets.keys())
             raise ValueError(
                 f"Target '{name}' not found. Copy an exact name from the list "
@@ -404,23 +414,23 @@ class ConnectionManager:
                 "and verify it with `vmware-log-insight doctor`. "
                 f"Available: {available}"
             )
+        return self._pool.get(name)
 
+    def _new_client(self, name: str) -> LogInsightClient:
+        target_cfg = self._config.get_target(name)
+        if target_cfg is None:  # connect() checked; the config is not reloaded
+            raise ValueError(f"Target '{name}' not found.")
         # Resolve both halves of the credential together — a username left
         # behind by a rotation would pair with the new password and fail.
-        client = LogInsightClient(
+        return LogInsightClient(
             target_cfg, target_cfg.get_password(name), target_cfg.get_username(name)
         )
-        self._clients[name] = client
-        return client
 
     def disconnect(self, target_name: str) -> None:
-        if target_name in self._clients:
-            self._clients[target_name].close()
-            del self._clients[target_name]
+        self._pool.discard(target_name)
 
     def disconnect_all(self) -> None:
-        for name in list(self._clients):
-            self.disconnect(name)
+        self._pool.close_all()
 
     def list_targets(self) -> list[str]:
         return list(self._config.targets.keys())
