@@ -150,6 +150,9 @@ def main(
     )
 
 
+# Role metadata for network callers (HLD §18).
+import vmware_log_insight.policy_roles  # noqa: F401
+
 if __name__ == "__main__":
     main()
 
