@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-uv tool install vmware-log-insight==2.3.0
+uv tool install vmware-log-insight==2.4.0
 mkdir -p ~/.vmware-log-insight
 cp config.example.yaml ~/.vmware-log-insight/config.yaml
 ```
@@ -84,7 +84,7 @@ reachability (TCP 9543), authentication, appliance version, MCP server import.
 ```json
 {
   "command": "uvx",
-  "args": ["--from", "vmware-log-insight==2.3.0", "vmware-log-insight-mcp"],
+  "args": ["--from", "vmware-log-insight==2.4.0", "vmware-log-insight-mcp"],
   "env": { "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml" }
 }
 ```
@@ -127,6 +127,7 @@ vmware-log-insight mcp --transport https --host 0.0.0.0 --port 8443 \
 - **Everyone who can reach the endpoint acts with this server's account.** Tokens identify callers; they grant
   nothing on the platform. Run one endpoint per privilege level (for example a read-only account behind
   `--expose read`, and a separate endpoint for operators).
+- **Several people or roles on one endpoint:** give each token a role (`vmware-audit token create NAME --role reader`, or a role in `roles.yaml` naming tools and targets; vmware-policy ≥ 1.24.0). A role limits what the token may call on this endpoint; it cannot grant more than the account has. See vmware-policy's README, "Roles for network callers".
 
 ## Security
 
