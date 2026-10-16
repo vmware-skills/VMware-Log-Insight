@@ -150,7 +150,7 @@ claude mcp add --transport http vmware-log-insight https://mcp.example.com:8443/
   that finds them all busy waits at most 300 s for one.
 - **Everyone who can reach the endpoint acts with this server's account.** Tokens identify callers; they grant
   nothing on the platform. Run one endpoint per privilege level.
-- **Several people or roles on one endpoint:** give each token a role (`vmware-audit token create NAME --role reader`, or a role in `roles.yaml` naming tools and targets; vmware-policy ≥ 1.24.0). A role limits what the token may call on this endpoint; it cannot grant more than the account has. See vmware-policy's README, "Roles for network callers".
+- **Several people or roles on one endpoint:** run `vmware-audit roles enable` once, then give each token a role (`vmware-audit token create NAME --role reader`, or a role in `roles.yaml` naming tools and targets; vmware-policy ≥ 1.24.0). A role limits what the token may call on this endpoint; it cannot grant more than the account has. See vmware-policy's README, "Roles for network callers".
 
 **Limiting tools:** every tool of this server is read-only, so `--expose read` changes nothing here; it
 exists for the write-capable skills. Least privilege comes from the account the server uses.
