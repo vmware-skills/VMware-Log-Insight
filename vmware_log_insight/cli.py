@@ -128,7 +128,7 @@ def doctor(
 @_friendly_errors
 @audited("search_logs")
 def search(
-    text: Annotated[str | None, typer.Option("--text", "-q", help="Word(s) to match (CONTAINS; whole tokens, not substrings)")] = None,
+    text: Annotated[str | None, typer.Option("--text", "-q", help="Word(s) to match (CONTAINS; whole words, * is a wildcard)")] = None,
     last: Annotated[str, typer.Option("--last", "-l", help="Relative window: 1h, 30m, 7d")] = "1h",
     limit: Annotated[int, typer.Option("--limit", "-n", help="Max events, 1..200 (default 50)")] = 50,
     as_json: Annotated[bool, typer.Option("--json", help="Raw JSON output")] = False,

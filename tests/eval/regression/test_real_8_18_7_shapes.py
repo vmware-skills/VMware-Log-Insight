@@ -390,3 +390,37 @@ def test_real_failure_keeps_its_traceback(caplog):
     assert len(errors) == 2
     # the real exception, not an empty sys.exc_info() tuple
     assert all(r.exc_info and r.exc_info[1] is not None for r in errors)
+
+
+# --- a partial word reads as "no such logs": say why when nothing matched ---
+
+EMPTY_EVENTS = {"complete": True, "duration": 6, "numResults": 0, "events": []}
+
+
+def test_zero_hits_on_a_partial_token_says_text_matches_whole_words():
+    # Live 8.18.7: "agt-w2" -> 0 with complete=true, "agt-w2*" -> 50+.
+    out = search_events(RealShapeClient(EMPTY_EVENTS), text="agt-w2", last="10m")
+    assert out["count"] == 0
+    assert "whole words" in out["note"] and "'agt-w2*'" in out["note"]
+
+
+def test_zero_hits_with_a_wildcard_or_no_text_adds_no_token_note():
+    for kw in ({"text": "agt-w2*"}, {}):
+        out = search_events(RealShapeClient(EMPTY_EVENTS), last="10m", **kw)
+        assert "whole words" not in out.get("note", "")
+
+
+def test_hits_add_no_token_note():
+    out = search_events(RealShapeClient(FIXTURE["events"]), text="envoy", last="10m")
+    assert out["count"] and "note" not in out
+
+
+def test_empty_series_on_a_partial_token_says_so_too():
+    empty = {"complete": True, "duration": 3, "numResults": 0, "bins": []}
+    out = aggregate_events(RealShapeClient(empty), text="agt-w2", last="10m")
+    assert "'agt-w2*'" in out["note"]
+
+
+def test_whole_word_note_wins_over_the_limit_note():
+    out = search_events(RealShapeClient(EMPTY_EVENTS), text="agt-w2", last="10m", limit=5000)
+    assert "whole words" in out["note"]

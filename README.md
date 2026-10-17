@@ -90,7 +90,7 @@ pip install --no-index --find-links dist vmware-log-insight
 
 - `401 on /sessions` → check username/password/`provider` and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
 - `503 everywhere` → appliance starting up; `doctor` reports it as a status, not a crash.
-- Empty results → widen `--last`; `text` matches whole tokens, not substrings; default API port is **9543** (set `port` if different).
+- Empty results → widen `--last`; `text` matches whole words, not substrings (try `word*`); default API port is **9543** (set `port` if different).
 - `UCOUNT needs a field` → pass `--field` (names from `fields`); COUNT and SAMPLE take none.
 
 ## Security

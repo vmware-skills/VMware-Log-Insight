@@ -58,7 +58,7 @@ vmware-log-insight doctor
 
 - `/sessions 返回 401` → 检查 username/password/`provider` 以及 `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` 环境变量。
 - `处处 503` → 设备正在启动；`doctor` 把它报告为状态，而不是崩溃。
-- 结果为空 → 放宽 `--last`；`text` 按整词匹配，不是子串；默认 API 端口是 **9543**（不同请设置 `port`）。
+- 结果为空 → 放宽 `--last`；`text` 按整词匹配，不是子串（可试 `word*`）；默认 API 端口是 **9543**（不同请设置 `port`）。
 - `UCOUNT needs a field` → 传 `--field`（名称来自 `fields`）；COUNT 和 SAMPLE 不带字段。
 
 ## 安全

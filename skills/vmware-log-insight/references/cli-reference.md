@@ -7,7 +7,7 @@ config; default if omitted) and `--config/-c <path>` (override config file).
 
 ```bash
 vmware-log-insight search [OPTIONS]
-  -q, --text TEXT       Word(s) to match (CONTAINS; whole tokens, not substrings)
+  -q, --text TEXT       Word(s) to match (CONTAINS; whole words, `*` wildcard)
   -l, --last TEXT       Relative window: 1h, 30m, 7d   [default: 1h]
   -n, --limit INTEGER   Max events (1..200; larger is lowered, with a note)  [default: 50]
       --json            Raw JSON output (table otherwise)
@@ -71,8 +71,10 @@ share one path segment, separated by an encoded space:
 - Time (absolute): `timestamp/%3E%20<begin_ms>` and `timestamp/%3C%20<end_ms>`,
   epoch **milliseconds**; a value that looks like seconds, or begin after end, is
   refused before any call.
-- Text: `text/CONTAINS%20<value>` — matches whole tokens, not substrings
-  (`localhost` matches `localhost.localdomain`; `localdom` matches nothing).
+- Text: `text/CONTAINS%20<value>` — matches whole words, not substrings
+  (`localhost` matches `localhost.localdomain`; `localdom` matches nothing;
+  `localdom*` matches again — `*` is a wildcard). With no match, the result's
+  `note` says this, because 0 events for part of a word is not "no such logs".
 - Existence: `<field>/EXISTS` (no value).
 - Operators: `CONTAINS`, `=`, `!=`, `<`, `>`, `EXISTS`, `LAST`.
 

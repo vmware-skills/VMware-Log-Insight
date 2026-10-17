@@ -31,8 +31,11 @@ never sends. The regression tests now replay responses captured from that applia
   target config does not have, so it raised on every call. Every call by a token whose role lists targets was
   refused as "cannot be resolved", and the audit row could not name the default target.
 * A refused argument now logs one warning line; real failures keep their traceback.
-* Docs: `search_logs` has no field-filter parameter (the docs said it had); `text` matches whole tokens, not
-  substrings; corrected token estimates.
+* **An empty text search says why.** `text` matches whole words: on 8.18.7 `agt-w2` returned 0 events
+  (`complete: true`) while `agt-w2*` returned 50+. When a text search without `*` matches nothing, `search_logs` and
+  `aggregate_logs` now add a `note` suggesting the wildcard, instead of an empty result that reads as "no such logs".
+* Docs: `search_logs` has no field-filter parameter (the docs said it had); `text` matches whole words, not
+  substrings, and `*` is a wildcard; corrected token estimates.
 
 ## v2.4.0 — roles for network callers (HLD §18)
 

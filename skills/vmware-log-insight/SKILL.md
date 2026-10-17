@@ -113,7 +113,7 @@ fills `limit` is still reported `truncated: false` when it is genuinely complete
 
 **Query model**: time windows use a relative `last` ("1h", "30m", "7d") or an
 absolute `begin_ms`/`end_ms` (epoch ms — seconds are refused); `text` is a
-CONTAINS search that matches whole tokens, not substrings. `search_logs`
+CONTAINS search that matches whole words, not substrings (`*` is a wildcard). `search_logs`
 returns at most 200 events (~650 chars each) and says so when it lowers `limit`. See
 `references/cli-reference.md` for the full constraint grammar.
 
@@ -140,7 +140,7 @@ vmware-log-insight mcp                                  # start MCP server (prox
 - **`POST /sessions returned HTTP 401`** — wrong username/password/provider. Check `config.yaml` (`provider: Local | ActiveDirectory`) and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
 - **`HTTP 503` on every call** — the appliance is starting or a service isn't ready; the error says so. Wait and retry; `doctor` reports it as a status, not a crash.
 - **`HTTP 400` on a search** — a malformed constraint. Time/field filters are path-encoded as `field/<OPERATOR value>` (e.g. `timestamp/LAST%203600000`); let the CLI/tool build them rather than hand-crafting.
-- **Empty results but logs exist** — check the time window (`last`) and that the appliance actually ingests from that source; widen the window. `text` matches whole tokens: `localdom` finds nothing where `localhost.localdomain` finds events.
+- **Empty results but logs exist** — check the time window (`last`) and that the appliance actually ingests from that source; widen the window. `text` matches whole words: `localdom` finds nothing, `localdom*` (wildcard) and `localhost.localdomain` find events. A text search that matches nothing says so in `note`.
 - **`UCOUNT needs a field` / `COUNT takes no field`** — the appliance answers HTTP 400 otherwise; pass `field=` only with UCOUNT/AVG/MIN/MAX/SUM/STDDEV/VARIANCE.
 - **Default port is 9543**, not 443 — set `port` in `config.yaml` if your appliance differs.
 

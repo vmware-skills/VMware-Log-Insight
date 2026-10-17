@@ -38,9 +38,11 @@ def search_logs(
 
     Args:
         text: Word(s) matched against the event message with the CONTAINS
-            operator. Log Insight matches whole tokens, not substrings:
-            "localhost" finds "localhost.localdomain", "localdom" finds nothing
-            (verified on 8.18.7). Not a regex and not a query expression. Omit to
+            operator. Log Insight matches whole words, not substrings:
+            "localhost" finds "localhost.localdomain", "localdom" finds nothing,
+            "localdom*" finds it again (`*` is a wildcard; verified on 8.18.7).
+            When a text search matches nothing, 'note' says so — 0 events for a
+            partial word is not evidence the logs do not exist. Not a regex and not a query expression. Omit to
             match every event in the window. This tool has no field-filter
             parameter; filter on a field's value by reading 'fields' in the result.
         last: Relative window ending now, as a quantity plus a unit suffix —
@@ -107,8 +109,8 @@ def aggregate_logs(
     the window is short. Read-only.
 
     Args:
-        text: Word(s) matched with CONTAINS (whole tokens, not substrings),
-            exactly as in search_logs. Omit to aggregate every event in the window.
+        text: Word(s) matched with CONTAINS (whole words, not substrings; `*`
+            is a wildcard), exactly as in search_logs. Omit to aggregate every event in the window.
         last: Relative window ending now — "30m", "2h", "7d" (units s/m/h/d) or
             a bare number of seconds. Cannot be combined with begin_ms/end_ms.
             Omit all three and the window defaults to the last hour.

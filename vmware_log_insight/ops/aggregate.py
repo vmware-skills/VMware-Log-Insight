@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 
 from vmware_log_insight.constraints import build_constraints
 from vmware_log_insight.ops._shape import expect_object
-from vmware_log_insight.ops.search import summarize_event
+from vmware_log_insight.ops.search import summarize_event, whole_word_note
 
 if TYPE_CHECKING:
     from vmware_log_insight.connection import LogInsightClient
@@ -156,7 +156,9 @@ def aggregate_events(
         "bins": bins,
         "spikes": detect_spikes(bins),
     }
-    if not bins and field:
+    if not bins and (note := whole_word_note(text)):
+        result["note"] = note
+    elif not bins and field:
         # 8.18.7 answers an unknown field with an empty series, not an error,
         # so "no bins" cannot be read as "no events".
         result["note"] = (

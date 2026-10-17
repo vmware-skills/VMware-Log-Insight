@@ -74,6 +74,22 @@ def _flatten_fields(event: dict) -> dict[str, str]:
     return out
 
 
+def whole_word_note(text: str | None) -> str | None:
+    """Why a text search that matched nothing may still have matching logs.
+
+    CONTAINS matches whole words on 8.18.7: "agt-w2" returned 0 events with
+    complete=true while "agt-w2*" returned 50+ (2026-10-17). An empty answer to a
+    partial word reads as "no such logs" (form #1), so say what to try. None
+    when there is no text or it already has a wildcard.
+    """
+    if not text or "*" in text:
+        return None
+    return (
+        f"No match for {sanitize(text, 80)!r}. text matches whole words, not parts "
+        f"of words: if this is part of a word, try '{sanitize(text, 80)}*'."
+    )
+
+
 def summarize_event(event: dict) -> dict:
     """Project one raw event onto the high-signal summary we return.
 
@@ -101,7 +117,9 @@ def search_events(
     Args:
         client: Authenticated Log Insight client.
         text: Free-text search, sent with CONTAINS. On 8.18.7 that matches whole
-            tokens, not substrings: "localhost" matches, "localdom" does not.
+            words, not substrings: "localhost" matches, "localdom" does not, and
+            "localdom*" does (``*`` is a wildcard). A text search that matches
+            nothing says so in "note".
         last: Relative window ("1h", "30m", int seconds). Default last hour if no
             window is given. Mutually exclusive with begin_ms/end_ms.
         begin_ms / end_ms: Absolute epoch-ms window.
@@ -138,4 +156,7 @@ def search_events(
             "returns. Narrow the window or the text, or use aggregate_logs to "
             "see where events cluster."
         )
+    if not events and (note := whole_word_note(text)):
+        # wins over the limit note: with nothing matched, the cap is not the story
+        result["note"] = note
     return result
