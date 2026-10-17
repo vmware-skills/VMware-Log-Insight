@@ -11,7 +11,7 @@ base `https://<host>:9543/api/v2`, session auth (Bearer). All tools read-only.
 | `get_log_insight_version` | GET /version | `{version, release_name, build}` | ~40 |
 | `list_log_alerts` | GET /alerts | envelope of `[{id, name, enabled, info}]` | 100–1500 |
 | `get_log_alert` | GET /alerts/{id} | `{id, name, enabled, info, raw_keys}` | 100–400 |
-| `get_log_alert_history` | GET /alerts/{id}/history | envelope of `[{timestamp_ms, info}]` | 100–1500 |
+| `get_log_alert_history` | GET /alerts/{id}/history?limit= | envelope of `[{timestamp_ms, acknowledged, message_count, messages:[{timestamp_ms, text}]}]` (≤3 messages per record) | ~150 per record |
 
 ## List envelope
 
@@ -29,9 +29,9 @@ rather than a bare list — read the rows from `items`:
 }
 ```
 
-`total` is a **real** count, never an estimate: the appliance returns each
-collection in one GET and this package applies `limit` client-side, so the full
-match count is already in hand. Two consequences worth relying on —
+For `list_log_fields` and `list_log_alerts`, `total` is a **real** count, never an
+estimate: the appliance returns the whole collection in one GET and this package
+applies `limit` client-side. Two consequences worth relying on —
 
 - `truncated: true` means rows were genuinely left behind; raise `limit` or
   narrow `name_filter`.
@@ -39,6 +39,11 @@ match count is already in hand. Two consequences worth relying on —
   is genuinely the whole set, so no redundant follow-up query is needed.
 - `list_log_fields` takes no `limit` at all, so it is always `truncated: false` —
   that is the complete field list, not a page of it.
+
+`get_log_alert_history` is different: the appliance pages history itself (`limit`
+up to 50; a larger value is lowered and `note` says so). A page shorter than
+`limit` is the whole history and carries a real `total`; a full page has
+`total: null` and `truncated: true`.
 
 ## High-signal design
 
@@ -65,7 +70,7 @@ regression tests replay them (`tests/fixtures/li_8_18_7.json`).
 | `GET /fields` | JSON array | items `{displayName, internalName, fieldType, isStatic, extracted[, displayNamespace]}` |
 | `GET /alerts` | JSON array | items carry `id` (UUID), `name`, `enabled`, `info`, `query`, `recipients`, `stats` |
 | `GET /alerts/{id}` | object | unknown UUID → HTTP 404; a non-UUID id → HTTP 500 |
-| `GET /alerts/{id}/history` | JSON array | empty on every alert tested, so record keys are unverified |
+| `GET /alerts/{id}/history` | JSON array | records `{alertId, triggerTimestamp, acknowledged, resultUrl, messages}`, each with up to 10 messages `{text, timestamp, staticFields, extractedFields}` — captured from a temporary alert that fired twice, then deleted. No `triggerTimestampString`, though the API docs list one. `[]` for an alert that never fired. |
 | `GET /events/{c}` | object | `{complete, duration, numResults, events}` |
 | `GET /aggregated-events/{c}` | object | `bins: [{minTimestamp, maxTimestamp, *String, value}]`, newest first, empty bins omitted; `value` is an event for SAMPLE |
 | `GET /version` | object | `{releaseName, version}` — the build is the version's suffix |

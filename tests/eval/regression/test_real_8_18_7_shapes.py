@@ -424,3 +424,46 @@ def test_empty_series_on_a_partial_token_says_so_too():
 def test_whole_word_note_wins_over_the_limit_note():
     out = search_events(RealShapeClient(EMPTY_EVENTS), text="agt-w2", last="10m", limit=5000)
     assert "whole words" in out["note"]
+
+
+# --- alert history: records captured from a temporary alert that fired on 8.18.7 ---
+
+
+def test_fired_history_records_have_a_trigger_time_and_messages():
+    recs = FIXTURE["alert_history_fired"]
+    out = get_alert_history(RealShapeClient(recs), recs[0]["alertId"])
+    assert out["returned"] == len(recs)
+    for item, raw in zip(out["items"], recs):
+        assert item["timestamp_ms"] == raw["triggerTimestamp"]
+        assert item["acknowledged"] is False
+        assert item["message_count"] == len(raw["messages"])
+        assert item["messages"][0]["text"] == raw["messages"][0]["text"][:500]
+        assert item["messages"][0]["timestamp_ms"] == raw["messages"][0]["timestamp"]
+        assert len(item["messages"]) <= 3
+
+
+def test_history_asks_the_appliance_for_the_page_it_pages():
+    # The appliance pages history (limit default 20, max 50, per its API docs),
+    # so a full page cannot claim to be the whole history.
+    recs = FIXTURE["alert_history_fired"]
+    client = RealShapeClient(recs)
+    out = get_alert_history(client, recs[0]["alertId"], limit=2)
+    assert client.params[-1] == {"limit": 2}
+    assert out["total"] is None and out["truncated"] is True
+    out = get_alert_history(client, recs[0]["alertId"], limit=500)
+    assert client.params[-1] == {"limit": 50}
+    assert "50" in out["note"]
+
+
+def test_short_history_page_is_the_whole_history():
+    recs = FIXTURE["alert_history_fired"]
+    out = get_alert_history(RealShapeClient(recs), recs[0]["alertId"], limit=20)
+    assert out["total"] == len(recs) and out["truncated"] is False
+
+
+def test_history_message_text_is_sanitized():
+    recs = copy.deepcopy(FIXTURE["alert_history_fired"])
+    recs[0]["messages"][0]["text"] = "x\x1b[2Jy\x00"
+    out = get_alert_history(RealShapeClient(recs), recs[0]["alertId"])
+    text = out["items"][0]["messages"][0]["text"]
+    assert "\x1b" not in text and "\x00" not in text

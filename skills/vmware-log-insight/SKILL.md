@@ -107,9 +107,10 @@ alarms (monitor) or metric anomalies (aria). This skill only reads the log store
 **List envelope**: `list_log_fields`, `list_log_alerts` and `get_log_alert_history` return
 `{items, returned, limit, total, truncated, hint}` rather than a bare list — read
 the rows from `items`, and treat `truncated: true` as "there is more, raise
-`limit` or narrow the filter". `total` is a real count (the appliance returns each
-collection in one GET and `limit` is applied client-side), so a page that exactly
-fills `limit` is still reported `truncated: false` when it is genuinely complete.
+`limit` or narrow the filter". For fields and alerts `total` is a real count (the
+appliance returns the whole collection in one GET and `limit` is applied here). Alert
+history is paged by the appliance (at most 50 records), so a full history page has
+`total: null` and `truncated: true`.
 
 **Query model**: time windows use a relative `last` ("1h", "30m", "7d") or an
 absolute `begin_ms`/`end_ms` (epoch ms — seconds are refused); `text` is a

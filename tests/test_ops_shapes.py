@@ -96,7 +96,13 @@ def test_list_alerts_summary_and_limit():
     assert out[0]["id"] == "a1" and out[0]["enabled"] is True
 
 
-def test_alert_history_variant_keys():
-    client = FakeClient([{"time": 5, "message": "fired"}])
+def test_alert_history_reads_trigger_records():
+    client = FakeClient(
+        [{"alertId": "a1", "triggerTimestamp": 5, "acknowledged": True,
+          "messages": [{"text": "fired", "timestamp": 4}]}]
+    )
     out = get_alert_history(client, "a1")
-    assert out["items"] == [{"timestamp_ms": 5, "info": "fired"}]
+    assert out["items"] == [{
+        "timestamp_ms": 5, "acknowledged": True, "message_count": 1,
+        "messages": [{"timestamp_ms": 4, "text": "fired"}],
+    }]

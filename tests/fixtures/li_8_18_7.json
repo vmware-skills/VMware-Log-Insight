@@ -1,5 +1,5 @@
 {
- "_comment": "Captured read-only from Aria Operations for Logs 8.18.7-25423541 on 2026-10-17 (lab appliance). IPs and ids scrubbed; structure untouched. Do not hand-edit shapes: recapture instead. content_packs keeps only the metadata keys the code reads plus provenance ones.",
+ "_comment": "Captured read-only from Aria Operations for Logs 8.18.7-25423541 on 2026-10-17 (lab appliance). IPs and ids scrubbed; structure untouched. Do not hand-edit shapes: recapture instead. content_packs keeps only the metadata keys the code reads plus provenance ones. alert_history_fired: from a temporary alert (created, fired twice, deleted) with each record's messages cut to 3 of 10.",
  "version": {
   "releaseName": "GA",
   "version": "8.18.7-25423541"
@@ -652,5 +652,383 @@
     "author": "VMware, Inc."
    }
   ]
- }
+ },
+ "alert_history_fired": [
+  {
+   "alertId": "00000000-0000-4000-8000-bb3834633de8",
+   "resultUrl": "https://10.0.0.120/explorer?existingChartQuery=%7B%22query%22%3A%22healthd%22%2C%22startTimeMillis%22%3A1792241795145%2C%22endTimeMillis%22%3A1792242095144%2C%22piqlFunctionGroups%22%3A%5B%7B%22functions%22%3A%5B%7B%22label%22%3A%22Count%22%2C%22value%22%3A%22COUNT%22%2C%22requiresField%22%3Afalse%2C%22numericOnly%22%3Afalse%7D%5D%2C%22field%22%3Anull%7D%5D%2C%22dateFilterPreset%22%3A%22CUSTOM%22%2C%22shouldGroupByTime%22%3Atrue%2C%22includeAllContentPackFields%22%3Atrue%2C%22eventSortOrder%22%3A%22DESC%22%2C%22summarySortOrder%22%3A%22DESC%22%2C%22compareQueryOrderBy%22%3A%22TREND%22%2C%22compareQuerySortOrder%22%3A%22DESC%22%2C%22compareQueryOptions%22%3Anull%2C%22messageViewType%22%3A%22EVENTS%22%2C%22constraintToggle%22%3A%22ALL%22%2C%22piqlFunction%22%3A%7B%22label%22%3A%22Count%22%2C%22value%22%3A%22COUNT%22%2C%22requiresField%22%3Afalse%2C%22numericOnly%22%3Afalse%7D%2C%22piqlFunctionField%22%3Anull%2C%22fieldConstraints%22%3A%5B%5D%2C%22supplementalConstraints%22%3A%5B%5D%2C%22groupByFields%22%3A%5B%5D%2C%22contentPacksToIncludeFields%22%3A%5B%5D%2C%22extractedFields%22%3A%5B%5D%7D",
+   "messages": [
+    {
+     "text": "2026-10-17T13:01:15.881Z localhost.localdomain healthd[1049874]: [Originator@6876 sub=HealthdHandler] Report Path: /var/lib/vmware/osdata/healthd/vmw.nfsDatastoreHealth",
+     "timestamp": 1792242075878,
+     "staticFields": [
+      {
+       "name": "hostname",
+       "content": "localhost.localdomain"
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_c751ecb5"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "content": "healthd"
+      },
+      {
+       "name": "procid",
+       "content": "1049874"
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "__li_source_path",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      }
+     ],
+     "extractedFields": [
+      {
+       "name": "client_syslog_priority",
+       "content": "166"
+      }
+     ]
+    },
+    {
+     "text": "2026-10-17T13:01:15.822Z localhost.localdomain healthd[1049874]: [Originator@6876 sub=PluginLauncher] Launching binary: /usr/lib/vmware/healthd/plugins/bin/nfs_datastore ++group=healthd-plugins,mem=40 -u http://!vmwLocalSocketHealthd ",
+     "timestamp": 1792242075819,
+     "staticFields": [
+      {
+       "name": "hostname",
+       "content": "localhost.localdomain"
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_a8b92841"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "content": "healthd"
+      },
+      {
+       "name": "procid",
+       "content": "1049874"
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "__li_source_path",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      }
+     ],
+     "extractedFields": [
+      {
+       "name": "client_syslog_priority",
+       "content": "166"
+      }
+     ]
+    },
+    {
+     "text": "2026-10-17T13:01:15.822Z localhost.localdomain healthd[1049874]: [Originator@6876 sub=PluginLauncher] Peak requested reservation (MB): 40, Peak requested reservation of children groups (MB): 40",
+     "timestamp": 1792242075819,
+     "staticFields": [
+      {
+       "name": "hostname",
+       "content": "localhost.localdomain"
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_b8445a27"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "content": "healthd"
+      },
+      {
+       "name": "procid",
+       "content": "1049874"
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "__li_source_path",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      }
+     ],
+     "extractedFields": [
+      {
+       "name": "client_syslog_priority",
+       "content": "166"
+      }
+     ]
+    }
+   ],
+   "acknowledged": false,
+   "triggerTimestamp": 1792242095144
+  },
+  {
+   "alertId": "00000000-0000-4000-8000-bb3834633de8",
+   "resultUrl": "https://10.0.0.120/explorer?existingChartQuery=%7B%22query%22%3A%22healthd%22%2C%22startTimeMillis%22%3A1792242095152%2C%22endTimeMillis%22%3A1792242395151%2C%22piqlFunctionGroups%22%3A%5B%7B%22functions%22%3A%5B%7B%22label%22%3A%22Count%22%2C%22value%22%3A%22COUNT%22%2C%22requiresField%22%3Afalse%2C%22numericOnly%22%3Afalse%7D%5D%2C%22field%22%3Anull%7D%5D%2C%22dateFilterPreset%22%3A%22CUSTOM%22%2C%22shouldGroupByTime%22%3Atrue%2C%22includeAllContentPackFields%22%3Atrue%2C%22eventSortOrder%22%3A%22DESC%22%2C%22summarySortOrder%22%3A%22DESC%22%2C%22compareQueryOrderBy%22%3A%22TREND%22%2C%22compareQuerySortOrder%22%3A%22DESC%22%2C%22compareQueryOptions%22%3Anull%2C%22messageViewType%22%3A%22EVENTS%22%2C%22constraintToggle%22%3A%22ALL%22%2C%22piqlFunction%22%3A%7B%22label%22%3A%22Count%22%2C%22value%22%3A%22COUNT%22%2C%22requiresField%22%3Afalse%2C%22numericOnly%22%3Afalse%7D%2C%22piqlFunctionField%22%3Anull%2C%22fieldConstraints%22%3A%5B%5D%2C%22supplementalConstraints%22%3A%5B%5D%2C%22groupByFields%22%3A%5B%5D%2C%22contentPacksToIncludeFields%22%3A%5B%5D%2C%22extractedFields%22%3A%5B%5D%7D",
+   "messages": [
+    {
+     "text": "2026-10-17T13:06:15.884Z localhost.localdomain healthd[1049874]: [Originator@6876 sub=HealthdHandler] Report Path: /var/lib/vmware/osdata/healthd/vmw.nfsDatastoreHealth",
+     "timestamp": 1792242375881,
+     "staticFields": [
+      {
+       "name": "hostname",
+       "content": "localhost.localdomain"
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_c751ecb5"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "content": "healthd"
+      },
+      {
+       "name": "procid",
+       "content": "1049874"
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "__li_source_path",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      }
+     ],
+     "extractedFields": [
+      {
+       "name": "client_syslog_priority",
+       "content": "166"
+      }
+     ]
+    },
+    {
+     "text": "2026-10-17T13:06:15.824Z localhost.localdomain healthd[1049917]: [Originator@6876 sub=PluginLauncher] Launching binary: /usr/lib/vmware/healthd/plugins/bin/nfs_datastore ++group=healthd-plugins,mem=40 -u http://!vmwLocalSocketHealthd ",
+     "timestamp": 1792242375821,
+     "staticFields": [
+      {
+       "name": "hostname",
+       "content": "localhost.localdomain"
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_a8b92841"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "content": "healthd"
+      },
+      {
+       "name": "procid",
+       "content": "1049917"
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "__li_source_path",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      }
+     ],
+     "extractedFields": [
+      {
+       "name": "client_syslog_priority",
+       "content": "166"
+      }
+     ]
+    },
+    {
+     "text": "2026-10-17T13:06:15.824Z localhost.localdomain healthd[1049917]: [Originator@6876 sub=PluginLauncher] Peak requested reservation (MB): 40, Peak requested reservation of children groups (MB): 40",
+     "timestamp": 1792242375821,
+     "staticFields": [
+      {
+       "name": "hostname",
+       "content": "localhost.localdomain"
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_b8445a27"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "content": "healthd"
+      },
+      {
+       "name": "procid",
+       "content": "1049917"
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "__li_source_path",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      }
+     ],
+     "extractedFields": [
+      {
+       "name": "client_syslog_priority",
+       "content": "166"
+      }
+     ]
+    }
+   ],
+   "acknowledged": false,
+   "triggerTimestamp": 1792242395151
+  }
+ ]
 }

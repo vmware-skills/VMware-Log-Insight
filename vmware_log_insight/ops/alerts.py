@@ -132,39 +132,67 @@ def get_alert(client: LogInsightClient, alert_id: str) -> dict:
     return summary
 
 
+# The appliance pages history itself (limit default 20, max 50 per its API docs);
+# one page is all this tool reads.
+_HISTORY_PAGE_MAX = 50
+# Each trigger record carries up to 10 matching events; a few say what fired.
+_MESSAGES_PER_RECORD = 3
+
+
+def _summarize_trigger(r: dict) -> dict:
+    """One trigger record: when it fired, whether acknowledged, a few events.
+
+    Verified on 8.18.7 (2026-10-17, a temporary alert that fired twice):
+    ``{alertId, triggerTimestamp, acknowledged, resultUrl, messages: [{text,
+    timestamp, staticFields, extractedFields}]}`` with up to 10 messages. Up to
+    2.4.0 this read ``timestamp``/``info``, which a record does not have, so
+    every row came back as ``{timestamp_ms: null, info: ""}``.
+    """
+    messages = [m for m in r.get("messages") or [] if isinstance(m, dict)]
+    return {
+        "timestamp_ms": r.get("triggerTimestamp"),
+        "acknowledged": r.get("acknowledged"),
+        "message_count": len(messages),
+        "messages": [
+            {"timestamp_ms": m.get("timestamp"), "text": sanitize(str(m.get("text", "")), 500)}
+            for m in messages[:_MESSAGES_PER_RECORD]
+        ],
+    }
+
+
 def get_alert_history(
     client: LogInsightClient, alert_id: str, limit: int = _DEFAULT_LIMIT
 ) -> dict:
-    """List recent trigger-history records for an alert.
+    """List recent trigger-history records for an alert, most recent first.
 
     Args:
         client: Authenticated Log Insight client.
         alert_id: The alert id (from list_alerts).
-        limit: Max history records to return. Default 50.
+        limit: Max records to return, 1..50 (the appliance's own page cap).
+            Default 50. A larger value is lowered to 50 and "note" says so.
 
     Returns:
-        The family list envelope; `items` is a list of {timestamp_ms, info}
-        records, most recent first as returned. The API hands back the whole
-        history in one GET and `limit` slices it here, so `total` is the real
-        record count at no extra cost — a page that exactly fills `limit` is
-        still reported complete when it genuinely is.
+        The family list envelope; `items` is a list of {timestamp_ms,
+        acknowledged, message_count, messages: [{timestamp_ms, text}]} (at most
+        3 of the record's events). The appliance pages history, so `total` is
+        known only when the page came back short; a full page is reported as
+        possibly truncated.
     """
     seg = _alert_segment(alert_id)
+    page = max(1, min(limit, _HISTORY_PAGE_MAX))
     try:
-        records = client.get(f"/alerts/{seg}/history")
+        records = client.get(f"/alerts/{seg}/history", params={"limit": page})
     except LogInsightApiError as exc:
         _raise_if_unknown_id(exc, f"/alerts/{seg}/history")
         raise
     records = expect_list(records, "GET /alerts/{id}/history")
-    records = [r for r in records if isinstance(r, dict)]
-    out: list[dict] = []
-    # The record shape is unverified: every alert on the 8.18.7 lab appliance
-    # had an empty history, so these keys are still the documented guesses.
-    for r in records[:limit]:
-        out.append(
-            {
-                "timestamp_ms": r.get("timestamp", r.get("time")),
-                "info": sanitize(str(r.get("info", r.get("message", ""))), 500),
-            }
+    records = [r for r in records if isinstance(r, dict)][:page]
+    out = [_summarize_trigger(r) for r in records]
+    total = len(out) if len(out) < page else None
+    result = paginated(out, limit=page, total=total)
+    if limit > _HISTORY_PAGE_MAX:
+        result["note"] = (
+            f"limit {limit} was lowered to {_HISTORY_PAGE_MAX}, the most the "
+            "appliance returns in one history page."
         )
-    return paginated(out, limit=limit, total=len(records))
+    return result

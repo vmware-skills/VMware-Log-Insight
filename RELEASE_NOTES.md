@@ -5,6 +5,11 @@ syslog). Three of the seven tools failed on every call, because the tests mocked
 never sends. The regression tests now replay responses captured from that appliance
 (`tests/fixtures/li_8_18_7.json`).
 
+* **`get_log_alert_history` returns real records.** Captured from a temporary alert that fired on 8.18.7 (then
+  deleted): each record is `{triggerTimestamp, acknowledged, messages, ...}`. The code read keys a record does not
+  have, so every row would have been `{timestamp_ms: null, info: ""}`. Rows are now `{timestamp_ms, acknowledged,
+  message_count, messages}` (3 events per record). History is paged by the appliance (up to 50), so a full page now
+  says `truncated: true` with `total: null` instead of claiming to be the whole history.
 * **`list_log_fields`, `list_log_alerts`, `get_log_alert_history` work.** 8.18.7 answers these with a bare JSON
   array; the code read it as an object and every call failed with `AttributeError: operation failed.` Field items are
   now `{name, internal_name, type}`. For a content-pack field `name` is the qualified

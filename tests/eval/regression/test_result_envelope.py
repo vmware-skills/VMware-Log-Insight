@@ -44,7 +44,10 @@ def _alerts(count: int) -> FakeClient:
 
 
 def _history(count: int) -> FakeClient:
-    return FakeClient([{"timestamp": i, "info": f"fired-{i}"} for i in range(count)])
+    return FakeClient(
+        [{"alertId": "a1", "triggerTimestamp": i, "acknowledged": False, "messages": []}
+         for i in range(count)]
+    )
 
 
 def _fields(count: int) -> FakeClient:
@@ -102,10 +105,12 @@ def test_exactly_full_page_with_known_total_is_complete():
     assert out["hint"] is None
 
 
-def test_alert_history_truncation_counts_all_records_not_the_page():
+def test_alert_history_full_page_is_not_claimed_complete():
+    # History is paged by the appliance (max 50 per page), so a full page
+    # cannot know the real total — unlike alerts and fields.
     out = get_alert_history(_history(120), "a1", limit=50)
     assert out["returned"] == 50
-    assert out["total"] == 120
+    assert out["total"] is None
     assert out["truncated"] is True
 
 

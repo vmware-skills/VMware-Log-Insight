@@ -84,21 +84,21 @@ def get_log_alert_history(alert_id: str, limit: int = 50, target: Optional[str] 
 
     Use this for when an alert fired, not how it's defined.
     Returns the family list envelope {items, returned, limit, total, truncated,
-    hint}; each item is {timestamp_ms, info} (record keys not yet seen on a
-    real appliance — every 8.18.7 alert tested had an empty history, which is
-    an empty list, not an error). total is the real history-record
-    count, so truncated answers whether older records were left behind — raise
-    limit when true. Read-only.
+    hint}; each item is {timestamp_ms (when it fired), acknowledged,
+    message_count, messages: [{timestamp_ms, text}]} with at most 3 of the
+    record's events (verified on 8.18.7). An alert that never fired returns an
+    empty list, not an error. The appliance pages history, so a page shorter
+    than limit is the whole history (real total); a full page has total null
+    and truncated true. Read-only.
 
     Args:
         alert_id: The alert id exactly as returned in an list_log_alerts row's 'id'
             field (not the alert's name). An empty or malformed id is refused
             before any call; an unknown id is HTTP 404 (or 500) on 8.18.7.
-        limit: Maximum history records returned, most recent first as the
-            appliance orders them (default 50). There is no offset — the
-            appliance hands back the whole history in one call and this slices
-            it, so when truncated is true the only way to reach older records is
-            a larger limit.
+        limit: Maximum history records returned, most recent first, 1..50
+            (default 50) — 50 is the appliance's own page cap; a larger value is
+            lowered and 'note' says so. There is no offset, so records older
+            than the newest 50 are not reachable through this tool.
         target: Log Insight target name as spelled in
             ~/.vmware-log-insight/config.yaml. Omit to use that file's
             default_target — with no default configured, omitting it is an error
