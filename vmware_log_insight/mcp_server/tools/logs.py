@@ -128,10 +128,10 @@ def aggregate_logs(
             hosts per bin. Required for UCOUNT/AVG/MIN/MAX/SUM/STDDEV/VARIANCE,
             refused for COUNT/SAMPLE. AVG/MIN/MAX/SUM/STDDEV/VARIANCE need a
             NUMBER field (list_log_fields 'type'). An unknown name returns an
-            empty series with a 'note', not an error. For a content-pack field
-            (one with a 'namespace'), whether the appliance takes 'name' or
-            'internal_name' is unverified — try 'internal_name' if 'name'
-            returns nothing.
+            empty series with a 'note', not an error. Pass 'name' exactly as
+            list_log_fields gives it: for a content-pack field that is the
+            qualified "com.vmware.vsphere:vmw_esxi_auth_failed_user" — the bare
+            display name and 'internal_name' match nothing.
         bin_width_ms: Width of each time bin in milliseconds, must be positive
             (default 60000 = one minute). It sets the resolution of both the
             series and the spike test: bins much wider than the burst average
@@ -163,7 +163,8 @@ def list_log_fields(name_filter: Optional[str] = None, target: Optional[str] = N
     Use this to pick a 'field' for aggregate_logs, or to learn what a key in a
     search_logs event's 'fields' means. Returns the family list envelope {items,
     returned, limit, total, truncated, hint}; each item is {name, internal_name,
-    type} plus 'namespace' for content-pack fields. 'name' is what aggregate_logs
+    type}; a content-pack field adds 'display_name' and 'content_pack', and its
+    'name' is qualified ("com.vmware.vsphere:<display name>"). 'name' is what aggregate_logs
     takes; 'type' (STRING, NUMBER, ...) says which functions apply. No limit —
     every matching field is returned. An 8.18.7 appliance with the default
     content packs has ~340 fields (~15k tokens unfiltered), so pass name_filter.

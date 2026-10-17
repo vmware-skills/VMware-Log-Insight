@@ -7,7 +7,9 @@ never sends. The regression tests now replay responses captured from that applia
 
 * **`list_log_fields`, `list_log_alerts`, `get_log_alert_history` work.** 8.18.7 answers these with a bare JSON
   array; the code read it as an object and every call failed with `AttributeError: operation failed.` Field items are
-  now `{name, internal_name, type}` (`name` is the display name; content-pack fields add `namespace`).
+  now `{name, internal_name, type}`. For a content-pack field `name` is the qualified
+  `<pack namespace>:<display name>`, the only form a query accepts (verified on 8.18.7). These fields also carry
+  `display_name` and `content_pack`. This costs one extra read of the content-pack list.
 * **`aggregate_logs` bins have timestamps.** Bins carry `minTimestamp`/`maxTimestamp`; every `timestamp_ms` was
   `null`, so spikes could not be placed in time. Bins are now `{timestamp_ms, end_ms, value}`, oldest first.
 * **`aggregate_logs` takes `field`** (CLI `--field`). UCOUNT, AVG, MIN, MAX, SUM, STDDEV and VARIANCE need one and

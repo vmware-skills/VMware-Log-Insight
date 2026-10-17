@@ -7,7 +7,7 @@ base `https://<host>:9543/api/v2`, session auth (Bearer). All tools read-only.
 |---|---|---|---|
 | `search_logs` | GET /events/{constraints} | `{count, complete, constraints, events:[{timestamp_ms, text, fields}]}` (+ `note` when `limit` was lowered) | ~160 per event: ~8000 at the default 50, ~32000 at the 200 cap |
 | `aggregate_logs` | GET /aggregated-events/{constraints} | `{aggregation, field, bin_width_ms, bins:[{timestamp_ms, end_ms, value}], spikes:[...]}` | ~1100 for 1h of 1-minute bins |
-| `list_log_fields` | GET /fields | envelope of `[{name, internal_name, type}]` | ~500 filtered; ~15000 unfiltered (~340 fields) |
+| `list_log_fields` | GET /fields (+ GET /content/contentpack when a field belongs to a pack) | envelope of `[{name, internal_name, type[, display_name, content_pack]}]` | ~500 filtered; ~15000 unfiltered (~340 fields) |
 | `get_log_insight_version` | GET /version | `{version, release_name, build}` | ~40 |
 | `list_log_alerts` | GET /alerts | envelope of `[{id, name, enabled, info}]` | 100–1500 |
 | `get_log_alert` | GET /alerts/{id} | `{id, name, enabled, info, raw_keys}` | 100–400 |
@@ -69,6 +69,14 @@ regression tests replay them (`tests/fixtures/li_8_18_7.json`).
 | `GET /events/{c}` | object | `{complete, duration, numResults, events}` |
 | `GET /aggregated-events/{c}` | object | `bins: [{minTimestamp, maxTimestamp, *String, value}]`, newest first, empty bins omitted; `value` is an event for SAMPLE |
 | `GET /version` | object | `{releaseName, version}` — the build is the version's suffix |
+| `GET /content/contentpack` | object | `{contentPackMetadataList: [{name, namespace, ...}]}` — maps a field's `displayNamespace` (the pack's display name) to its namespace |
+
+**Content-pack fields** are queried as `<pack namespace>:<displayName>`, e.g.
+`com.vmware.vsphere:vmw_esxi_auth_failed_user`. Verified with one synthetic hostd
+event: UCOUNT on the qualified name counted it; the bare display name and the
+encoded `internalName` matched nothing. `list_log_fields` returns the qualified
+name. Events only carry such fields when the query passes `content-pack-fields`,
+which `search_logs` does not, so its `fields` hold static fields only.
 
 Aggregation functions: COUNT and SAMPLE answer HTTP 400 with an
 `aggregation-field`; UCOUNT, AVG, MIN, MAX, SUM, STDDEV and VARIANCE answer

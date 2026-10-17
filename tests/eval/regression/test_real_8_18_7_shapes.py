@@ -49,8 +49,29 @@ class RealShapeClient:
 # --- fields: a bare JSON array of {displayName, internalName, fieldType, ...} ---
 
 
+class PathClient:
+    """Answers each path with its captured payload; an unrouted path is a 404."""
+
+    def __init__(self, routes: dict):
+        self.routes = routes
+        self.paths: list[str] = []
+
+    def get(self, path, params=None, **kwargs):
+        self.paths.append(path)
+        if path not in self.routes:
+            raise LogInsightApiError(f"HTTP 404 for GET {path}", status_code=404, path=path)
+        return copy.deepcopy(self.routes[path])
+
+
+def _fields_client(packs=True) -> PathClient:
+    routes = {"/fields": FIXTURE["fields"]}
+    if packs:
+        routes["/content/contentpack"] = FIXTURE["content_packs"]
+    return PathClient(routes)
+
+
 def test_fields_bare_array_is_listed_by_display_name():
-    out = list_fields(RealShapeClient(FIXTURE["fields"]))
+    out = list_fields(_fields_client())
     names = [f["name"] for f in out["items"]]
     assert out["total"] == len(FIXTURE["fields"]) == len(names)
     assert "hostname" in names and "appname" in names
@@ -61,8 +82,34 @@ def test_fields_bare_array_is_listed_by_display_name():
 
 
 def test_fields_name_filter_on_bare_array():
-    out = list_fields(RealShapeClient(FIXTURE["fields"]), name_filter="HOST")
+    out = list_fields(_fields_client(), name_filter="HOST")
     assert [f["name"] for f in out["items"]] == ["hostname"]
+
+
+def test_content_pack_fields_get_the_name_a_query_accepts():
+    # Verified live: only "<pack namespace>:<displayName>" aggregates; the bare
+    # display name and the encoded internalName match nothing.
+    out = list_fields(_fields_client(), name_filter="vmw_config_type")
+    (f,) = out["items"]
+    assert f["name"] == "com.vmware.vsphere:vmw_config_type"
+    assert f["display_name"] == "vmw_config_type"
+    assert f["content_pack"] == "VMware - vSphere"
+    assert f["internal_name"].startswith("ibadcoc7")
+    assert "note" not in out
+
+
+def test_unreadable_pack_list_is_said_not_hidden():
+    out = list_fields(_fields_client(packs=False), name_filter="vmw_config_type")
+    (f,) = out["items"]
+    assert f["name"] == "vmw_config_type"
+    assert "pack namespace" in out["note"]
+
+
+def test_no_pack_lookup_when_no_field_needs_one():
+    static = [f for f in FIXTURE["fields"] if not f.get("displayNamespace")]
+    client = PathClient({"/fields": static})
+    list_fields(client)
+    assert client.paths == ["/fields"]
 
 
 def test_fields_unexpected_shape_is_a_teaching_error_not_attributeerror():
@@ -244,6 +291,8 @@ class RoutedClient:
             return copy.deepcopy(FIXTURE["version"])
         if path == "/fields":
             return copy.deepcopy(self.fields_payload)
+        if path == "/content/contentpack":
+            return copy.deepcopy(FIXTURE["content_packs"])
         raise AssertionError(f"doctor called an unexpected path: {path}")
 
 

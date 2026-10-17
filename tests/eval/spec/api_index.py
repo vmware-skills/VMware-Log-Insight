@@ -42,6 +42,14 @@ OFFICIAL_OPERATIONS: frozenset[tuple[str, str]] = frozenset(
         ("GET", "/api/v2/aggregated-events/{constraints}"),
         # --- Metadata / fields ---
         ("GET", "/api/v2/fields"),
+        # Installed content packs ({contentPackMetadataList: [{name, namespace}]}).
+        # Not in the community v1 docs; verified live on 8.18.7-25423541
+        # (2026-10-17) and captured in tests/fixtures/li_8_18_7.json. Needed
+        # because a content-pack field is queried as "<namespace>:<displayName>"
+        # (verified: UCOUNT on com.vmware.vsphere:vmw_esxi_auth_failed_user
+        # returned 1 where the display and internal names returned nothing),
+        # while /fields names only the pack's display name.
+        ("GET", "/api/v2/content/contentpack"),
         ("GET", "/api/v2/version"),
         # --- Alerts ---
         ("GET", "/api/v2/alerts"),

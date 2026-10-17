@@ -1,5 +1,5 @@
 {
- "_comment": "Captured read-only from Aria Operations for Logs 8.18.7-25423541 on 2026-10-17 (lab appliance). IPs and ids scrubbed; structure untouched. Do not hand-edit shapes: recapture instead.",
+ "_comment": "Captured read-only from Aria Operations for Logs 8.18.7-25423541 on 2026-10-17 (lab appliance). IPs and ids scrubbed; structure untouched. Do not hand-edit shapes: recapture instead. content_packs keeps only the metadata keys the code reads plus provenance ones.",
  "version": {
   "releaseName": "GA",
   "version": "8.18.7-25423541"
@@ -613,5 +613,44 @@
   "duration": 59,
   "numResults": 0,
   "bins": []
+ },
+ "content_packs": {
+  "contentPackMetadataList": [
+   {
+    "name": "General",
+    "namespace": "com.vmware.loginsight.general",
+    "formatVersion": "2.4",
+    "contentVersion": "4.6",
+    "author": "VMware, Inc."
+   },
+   {
+    "name": "VMware - vROps 6.7+",
+    "namespace": "com.vmware.vrops67",
+    "formatVersion": "2.4",
+    "contentVersion": "4.3",
+    "author": "VMware, Inc."
+   },
+   {
+    "name": "VMware - vSAN",
+    "namespace": "com.vmware.vsan",
+    "formatVersion": "2.4",
+    "contentVersion": "3.0",
+    "author": "VMware Inc."
+   },
+   {
+    "name": "VMware - vSphere",
+    "namespace": "com.vmware.vsphere",
+    "formatVersion": "2.4",
+    "contentVersion": "8.18",
+    "author": "VMware, Inc."
+   },
+   {
+    "name": "VMware Aria Operations 8.12+",
+    "namespace": "com.vmware.vrops812",
+    "formatVersion": "2.4",
+    "contentVersion": "1.0",
+    "author": "VMware, Inc."
+   }
+  ]
  }
 }
