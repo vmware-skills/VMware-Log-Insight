@@ -107,7 +107,8 @@ def list_alerts(
         if filt and filt not in summary["name"].lower():
             continue
         matched.append(summary)
-    return paginated(matched[:limit], limit=limit, total=len(matched))
+    page = max(1, limit)  # a negative slice would drop rows from the end
+    return paginated(matched[:page], limit=page, total=len(matched))
 
 
 def get_alert(client: LogInsightClient, alert_id: str) -> dict:

@@ -77,14 +77,14 @@ alarms (monitor) or metric anomalies (aria). This skill only reads the log store
 ## Common Workflows
 
 ### 1. "Find the errors on a host in the last hour"
-1. `search_logs(text="error", last="1h")` — or CLI: `vmware-log-insight search -q error -l 1h`. There is no host filter parameter: read each event's `fields.hostname` / `fields.source`, or put the host name in `text` (whole tokens match: `esx01.lab.local` does, `esx01` alone may not).
+1. `search_logs(text="error", last="1h")` — or CLI: `vmware-log-insight search -q error -l 1h`. There is no host filter parameter: read each event's `fields.hostname` / `fields.source`, or put the host name in `text` (whole words match, and dots split words: `esx01` finds `esx01.lab.local`; `esx0` finds nothing, `esx0*` does).
 2. Read the `events[]` (timestamp + text + fields). Narrow with a more specific `text` if `complete=False` (result was truncated).
 3. **Failure branch — auth/connection error:** the teaching message names the cause (e.g. "503: appliance starting up"); run `vmware-log-insight doctor`. A 503 is a *status*, not a crash.
 
 ### 2. "Was there a log spike, and when?"
 1. `aggregate_logs(text="...", last="6h", bin_width_ms=300000)` — counts per 5-minute bin + `spikes[]` (z-score flagged).
 2. Take a spike's `timestamp_ms`, then `search_logs(begin_ms=..., end_ms=...)` around it to read what burst.
-3. **Failure branch — empty bins:** widen `last` or drop the `text` filter; confirm the appliance actually receives logs from the source. Bins with no events are omitted, so a short series means quiet minutes, not missing data.
+3. **Failure branch — empty bins:** widen `last` or drop the `text` filter; confirm the appliance actually receives logs from the source. The appliance omits bins with no events; for COUNT and UCOUNT the tool adds them back as 0 (`filled_empty_bins: true`), so a burst after a quiet stretch still shows as a spike.
 4. Distinct hosts per bin: `aggregate_logs(aggregation="UCOUNT", field="hostname")`. Only COUNT and SAMPLE take no `field`; the other seven need one (names from `list_log_fields`).
 
 ### 3. Correlate logs into a root-cause timeline

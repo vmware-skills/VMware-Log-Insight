@@ -331,7 +331,21 @@ class LogInsightClient:
         (e.g. a liveness check) to skip the transient back-off.
         """
         resp = self._request("GET", path, params=params, retries=retries)
-        return resp.json() if resp.content else {}
+        if not resp.content:
+            return {}
+        try:
+            return resp.json()
+        except ValueError as exc:  # JSONDecodeError / UnicodeDecodeError
+            # A ValueError reads as "bad argument" to the error layer; this is
+            # the appliance (or a proxy in front of it) answering non-JSON.
+            raise LogInsightApiError(
+                f"GET {path} answered HTTP {resp.status_code} with a body that is not JSON. "
+                "Something other than the Log Insight API answered — check host/port "
+                "(9543) and any proxy in front of it, then run `vmware-log-insight doctor`.",
+                status_code=resp.status_code,
+                method="GET",
+                path=path,
+            ) from exc
 
     def is_alive(self) -> bool:
         """Check whether the cached client + session are still usable.

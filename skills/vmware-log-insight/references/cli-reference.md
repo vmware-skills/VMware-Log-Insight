@@ -31,7 +31,8 @@ vmware-log-insight aggregate [OPTIONS]
 ```
 
 Returns JSON: `{aggregation, field, bin_width_ms, constraints, bins:[{timestamp_ms, end_ms, value}], spikes:[{timestamp_ms, end_ms, value, zscore}]}`,
-bins oldest first. Bins with no events are omitted by the appliance. For `SAMPLE`
+bins oldest first. The appliance omits bins with no events; for COUNT and UCOUNT they are
+added back as 0 (`filled_empty_bins: true`), for the others they stay missing. For `SAMPLE`
 each bin's value is one example event. COUNT and SAMPLE refuse `--field`; the other
 seven require it (the appliance answers HTTP 400 otherwise). AVG/MIN/MAX/SUM/STDDEV/
 VARIANCE need a NUMBER field, e.g. `--agg UCOUNT --field hostname`.

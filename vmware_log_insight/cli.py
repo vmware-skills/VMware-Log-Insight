@@ -188,13 +188,16 @@ def fields(
     from vmware_log_insight.ops.fields import list_fields
 
     client, _ = _get_connection(target, config)
-    items = list_fields(client, name_filter=name)["items"]
+    result = list_fields(client, name_filter=name)
+    items = result["items"]
     table = Table(title=f"Fields ({len(items)})")
     table.add_column("Name", style="bold")
     table.add_column("Type")
     for f in items:
         table.add_row(escape(f["name"]), f["type"])
     console.print(table)
+    if result.get("note"):
+        console.print(f"[yellow]{escape(result['note'])}[/yellow]")
 
 
 @alert_app.command("list")

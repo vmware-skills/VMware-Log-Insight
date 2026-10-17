@@ -8,7 +8,7 @@ never sends. The regression tests now replay responses captured from that applia
 * **`get_log_alert_history` returns real records.** Captured from a temporary alert that fired on 8.18.7 (then
   deleted): each record is `{triggerTimestamp, acknowledged, messages, ...}`. The code read keys a record does not
   have, so every row would have been `{timestamp_ms: null, info: ""}`. Rows are now `{timestamp_ms, acknowledged,
-  message_count, messages}` (3 events per record). History is paged by the appliance (up to 50), so a full page now
+  message_count, messages}` (at most 3 events per record). History is paged by the appliance (up to 50), so a full page now
   says `truncated: true` with `total: null` instead of claiming to be the whole history.
 * **`list_log_fields`, `list_log_alerts`, `get_log_alert_history` work.** 8.18.7 answers these with a bare JSON
   array; the code read it as an object and every call failed with `AttributeError: operation failed.` Field items are
@@ -36,6 +36,12 @@ never sends. The regression tests now replay responses captured from that applia
   target config does not have, so it raised on every call. Every call by a token whose role lists targets was
   refused as "cannot be resolved", and the audit row could not name the default target.
 * A refused argument now logs one warning line; real failures keep their traceback.
+* **Spikes are measured against quiet, not only against bursts.** The appliance omits bins with no events. For
+  COUNT and UCOUNT those bins are now added back as 0 (`filled_empty_bins: true`), so a burst after a quiet stretch
+  is reported as a spike.
+* A content-pack field whose pack is missing from the pack list is marked `unresolved` with a note. Fields the
+  appliance lists twice are listed once. A non-JSON answer (e.g. a proxy's login page) is reported as the
+  appliance or proxy answering wrongly, not as an argument error.
 * **An empty text search says why.** `text` matches whole words: on 8.18.7 `agt-w2` returned 0 events
   (`complete: true`) while `agt-w2*` returned 50+. When a text search without `*` matches nothing, `search_logs` and
   `aggregate_logs` now add a `note` suggesting the wildcard, instead of an empty result that reads as "no such logs".

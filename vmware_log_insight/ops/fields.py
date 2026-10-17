@@ -54,6 +54,9 @@ def _summarize_field(f: dict, packs: dict[str, str] | None) -> dict:
         namespace = (packs or {}).get(str(pack))
         if namespace:
             out["name"] = sanitize(f"{namespace}:{f.get('displayName', '')}", 300)
+        else:
+            # A query cannot use this field until its pack's namespace is known.
+            out["unresolved"] = True
     return out
 
 
@@ -78,10 +81,16 @@ def list_fields(client: LogInsightClient, name_filter: str | None = None) -> dic
     packs = _pack_namespaces(client) if any(f.get("displayNamespace") for f in items) else {}
     filt = name_filter.lower() if name_filter else None
     out: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
     for f in items:
         summary = _summarize_field(f, packs)
         if not summary["name"]:
             continue
+        # 8.18.7 lists some fields twice, identically (source, facility).
+        key = (summary["name"], summary["internal_name"], summary["type"])
+        if key in seen:
+            continue
+        seen.add(key)
         if filt and filt not in summary["name"].lower():
             continue
         out.append(summary)
@@ -90,6 +99,12 @@ def list_fields(client: LogInsightClient, name_filter: str | None = None) -> dic
         result["note"] = (
             "The content-pack list could not be read, so content-pack fields are "
             "named by display name only; a query needs '<pack namespace>:<name>'."
+        )
+    elif any(item.get("unresolved") for item in out):
+        result["note"] = (
+            "Fields marked 'unresolved' belong to a content pack that is not in the "
+            "pack list, so they are named by display name only; a query needs "
+            "'<pack namespace>:<name>'."
         )
     return result
 

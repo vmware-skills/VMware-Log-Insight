@@ -33,7 +33,8 @@ def search_logs(
     RETURNS: {count, complete (False if truncated), constraints,
     events: [{timestamp_ms, text, fields}]}, plus 'note' when limit was lowered.
     'fields' is a flat {name: value} dict — hostname, appname, procid, source,
-    facility and any extracted fields the appliance attached. Feed events to
+    facility and the other static fields the appliance attached (content-pack
+    fields are not included: the query does not ask for them). Feed events to
     vmware-debug build_incident_timeline to correlate across sources. Read-only.
 
     Args:
@@ -101,8 +102,11 @@ def aggregate_logs(
     end_ms, value}] oldest first, spikes:[{timestamp_ms, end_ms, value,
     zscore}]}, plus 'note' when an empty series has a likely cause. For SAMPLE
     each bin's value is one example event {timestamp_ms, text, fields}, and no
-    spikes are computed. The appliance omits bins with no events, so a quiet
-    minute is a missing bin, not a zero. A bin is flagged as a
+    spikes are computed. The appliance omits bins with no events; for COUNT and
+    UCOUNT those are added back as 0 (filled_empty_bins: true) so a burst after
+    a quiet stretch still stands out. On a sparse series (a few events in an
+    hour) that makes most non-empty bins spikes — read them as "events
+    happened here", not as bursts. A bin is flagged as a
     spike when it sits at least 2 standard deviations above the mean; a series
     of fewer than 3 bins, or a flat one, reports no spikes rather than calling
     everything a spike — so an empty 'spikes' list is not evidence of calm when
@@ -166,15 +170,18 @@ def list_log_fields(name_filter: Optional[str] = None, target: Optional[str] = N
     search_logs event's 'fields' means. Returns the family list envelope {items,
     returned, limit, total, truncated, hint}; each item is {name, internal_name,
     type}; a content-pack field adds 'display_name' and 'content_pack', and its
-    'name' is qualified ("com.vmware.vsphere:<display name>"). 'name' is what aggregate_logs
+    'name' is qualified ("com.vmware.vsphere:<display name>"); 'unresolved':
+    true (with a 'note') means its pack's namespace is unknown, so that name will
+    match nothing. 'name' is what aggregate_logs
     takes; 'type' (STRING, NUMBER, ...) says which functions apply. No limit —
     every matching field is returned. An 8.18.7 appliance with the default
     content packs has ~340 fields (~15k tokens unfiltered), so pass name_filter.
     Read-only.
 
     Args:
-        name_filter: Case-insensitive substring matched against the field's
-            display name ('name').
+        name_filter: Case-insensitive substring matched against 'name' — for a
+            content-pack field the qualified name, so "vsphere" matches every
+            vSphere-pack field.
             Omit to return every field this appliance extracts. Field extraction
             is deployment-specific, so a name absent here does not exist for
             this target no matter what it is called elsewhere.

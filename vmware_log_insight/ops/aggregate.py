@@ -8,9 +8,10 @@ scanning raw events. Pure aggregation math is unit-testable offline.
 from __future__ import annotations
 
 import logging
+import time
 from typing import TYPE_CHECKING
 
-from vmware_log_insight.constraints import build_constraints
+from vmware_log_insight.constraints import build_constraints, parse_duration_ms
 from vmware_log_insight.ops._shape import expect_object
 from vmware_log_insight.ops.search import summarize_event, whole_word_note
 
@@ -148,6 +149,10 @@ def aggregate_events(
         "GET /aggregated-events",
     )
     bins = _normalize_bins(data)
+    filled = False
+    if aggregation in _ZERO_WHEN_EMPTY and bins:
+        window = _window_ms(last, begin_ms, end_ms)
+        bins, filled = _fill_empty_bins(bins, window, bin_width_ms)
     result = {
         "aggregation": aggregation,
         "field": field,
@@ -156,13 +161,68 @@ def aggregate_events(
         "bins": bins,
         "spikes": detect_spikes(bins),
     }
+    if filled:
+        result["filled_empty_bins"] = True
+    notes = []
     if not bins and (note := whole_word_note(text)):
-        result["note"] = note
-    elif not bins and field:
+        notes.append(note)
+    if not bins and field:
         # 8.18.7 answers an unknown field with an empty series, not an error,
         # so "no bins" cannot be read as "no events".
-        result["note"] = (
+        notes.append(
             f"No bins. Either nothing matched in the window, or {field!r} is not "
             "a field this appliance has — check the name with list_log_fields."
         )
+    if notes:
+        result["note"] = " ".join(notes)
     return result
+
+
+# A bin with no events is 0 for these; for AVG/MIN/MAX/... it has no value.
+_ZERO_WHEN_EMPTY = frozenset({"COUNT", "UCOUNT"})
+# Past this many bins the series is too fine to pad; it is returned as sent.
+_MAX_FILLED_BINS = 5000
+
+
+def _window_ms(
+    last: str | int | None, begin_ms: int | None, end_ms: int | None
+) -> tuple[int, int]:
+    """The query window as (start, end) epoch ms, as build_constraints reads it."""
+    now = int(time.time() * 1000)
+    if begin_ms is not None or end_ms is not None:
+        return (begin_ms if begin_ms is not None else 0, end_ms if end_ms is not None else now)
+    return (now - parse_duration_ms(last if last is not None else "1h"), now)
+
+
+def _fill_empty_bins(
+    bins: list[dict], window: tuple[int, int], width: int
+) -> tuple[list[dict], bool]:
+    """Add the zero bins 8.18.7 leaves out, so spikes are measured against quiet.
+
+    The appliance omits bins with no events (verified 2026-10-17: "warning" over
+    an hour of 1-minute bins came back as 4 bins). A burst after a quiet stretch
+    then arrives as one or two bins, the baseline is the burst itself, and no
+    spike is reported. Bins are aligned to multiples of the width (as the
+    appliance aligns them). A window with no start (end_ms only), or one that
+    would need more than _MAX_FILLED_BINS, is only filled between the bins sent.
+    """
+    starts = [b["timestamp_ms"] for b in bins if isinstance(b["timestamp_ms"], int)]
+    if not starts:
+        return bins, False
+    lo = window[0] if window[0] > 0 else min(starts)
+    first = (min(lo, min(starts)) // width) * width
+    last = max(max(starts), ((window[1] - 1) // width) * width)
+    if (last - first) // width + 1 > _MAX_FILLED_BINS:
+        first, last = min(starts), max(starts)
+        if (last - first) // width + 1 > _MAX_FILLED_BINS:
+            return bins, False
+    present = {b["timestamp_ms"] for b in bins}
+    extra = [
+        {"timestamp_ms": t, "end_ms": t + width - 1, "value": 0}
+        for t in range(first, last + 1, width)
+        if t not in present
+    ]
+    if not extra:
+        return bins, False
+    merged = sorted(bins + extra, key=lambda b: b["timestamp_ms"] if isinstance(b["timestamp_ms"], int) else 0)
+    return merged, True

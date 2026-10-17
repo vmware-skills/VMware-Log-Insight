@@ -73,7 +73,9 @@ def _fields_client(packs=True) -> PathClient:
 def test_fields_bare_array_is_listed_by_display_name():
     out = list_fields(_fields_client())
     names = [f["name"] for f in out["items"]]
-    assert out["total"] == len(FIXTURE["fields"]) == len(names)
+    # 8.18.7 lists some fields twice, identically (source, facility); one each here.
+    assert len(names) == len(set(names)) == out["total"]
+    assert names.count("source") == 1
     assert "hostname" in names and "appname" in names
     # displayName is what a person types; internalName is what the API stores.
     source = next(f for f in out["items"] if f["name"] == "source")
@@ -327,7 +329,8 @@ def _doctor_with(fields_payload, tmp_path, monkeypatch, capsys):
 def test_doctor_passes_on_the_real_fields_shape(tmp_path, monkeypatch, capsys):
     ok, out = _doctor_with(FIXTURE["fields"], tmp_path, monkeypatch, capsys)
     assert ok, out
-    assert "Query API" in out and f"{len(FIXTURE['fields'])} fields" in out
+    distinct = len({(f["displayName"], f["internalName"]) for f in FIXTURE["fields"]})
+    assert "Query API" in out and f"{distinct} fields" in out
 
 
 def test_doctor_fails_when_the_query_api_shape_is_wrong(tmp_path, monkeypatch, capsys):
@@ -467,3 +470,87 @@ def test_history_message_text_is_sanitized():
     out = get_alert_history(RealShapeClient(recs), recs[0]["alertId"])
     text = out["items"][0]["messages"][0]["text"]
     assert "\x1b" not in text and "\x00" not in text
+
+
+
+# --- independent review 2026-10-17 ---
+
+
+def test_unparseable_json_is_an_api_error_not_an_input_error():
+    # A proxy answering HTML with 200: json() raises JSONDecodeError, a
+    # ValueError, which used to read as "Argument problem" with no traceback.
+    import httpx
+
+    from vmware_log_insight.connection import LogInsightClient
+
+    client = LogInsightClient.__new__(LogInsightClient)
+    client._request = lambda *a, **k: httpx.Response(200, text="<html>login</html>")
+    with pytest.raises(LogInsightApiError, match="not JSON"):
+        client.get("/fields")
+
+
+def test_a_pack_field_whose_pack_is_unknown_says_so():
+    packs = {"contentPackMetadataList": [
+        p for p in FIXTURE["content_packs"]["contentPackMetadataList"] if p["name"] != "VMware - vSphere"
+    ]}
+    out = list_fields(PathClient({"/fields": FIXTURE["fields"], "/content/contentpack": packs}),
+                      name_filter="vmw_config_type")
+    (f,) = out["items"]
+    assert f["name"] == "vmw_config_type" and f["unresolved"] is True
+    assert "pack namespace" in out["note"]
+
+
+def test_both_empty_series_causes_are_named():
+    empty = {"complete": True, "duration": 3, "numResults": 0, "bins": []}
+    out = aggregate_events(RealShapeClient(empty), text="error", last="10m",
+                           aggregation="AVG", field="no_such")
+    assert "'error*'" in out["note"] and "list_log_fields" in out["note"]
+
+
+def test_count_fills_the_bins_the_appliance_omits():
+    # 8.18.7 omits bins with no events; a burst after a quiet stretch must still
+    # stand out against the zeros, not against the burst itself.
+    t0 = 1_800_000_000_000
+    payload = {"complete": True, "bins": [
+        {"minTimestamp": t0 + 9 * 60000, "maxTimestamp": t0 + 10 * 60000 - 1, "value": 500},
+        {"minTimestamp": t0 + 8 * 60000, "maxTimestamp": t0 + 9 * 60000 - 1, "value": 2},
+    ]}
+    out = aggregate_events(RealShapeClient(payload), begin_ms=t0, end_ms=t0 + 10 * 60000,
+                           bin_width_ms=60000)
+    assert len(out["bins"]) == 10
+    assert [b["value"] for b in out["bins"]][:8] == [0] * 8
+    assert [s["value"] for s in out["spikes"]] == [500]
+
+
+def test_fill_is_skipped_for_functions_with_no_zero():
+    t0 = 1_800_000_000_000
+    payload = {"complete": True, "bins": [
+        {"minTimestamp": t0 + 5 * 60000, "maxTimestamp": t0 + 6 * 60000 - 1, "value": 7.5}]}
+    out = aggregate_events(RealShapeClient(payload), begin_ms=t0, end_ms=t0 + 10 * 60000,
+                           aggregation="AVG", field="procid")
+    assert len(out["bins"]) == 1
+
+
+def test_history_keeps_three_messages_but_counts_all():
+    recs = copy.deepcopy(FIXTURE["alert_history_fired"])
+    recs[0]["messages"] = (recs[0]["messages"] * 4)[:10]
+    out = get_alert_history(RealShapeClient(recs), recs[0]["alertId"])
+    assert out["items"][0]["message_count"] == 10
+    assert len(out["items"][0]["messages"]) == 3
+
+
+def test_list_alerts_nonpositive_limit_does_not_slice_from_the_end():
+    out = list_alerts(RealShapeClient(FIXTURE["alerts"]), limit=-1)
+    assert out["returned"] <= 1 and out["total"] == len(FIXTURE["alerts"])
+
+
+def test_cli_fields_prints_the_note(monkeypatch):
+    from typer.testing import CliRunner
+
+    from vmware_log_insight import cli
+
+    client = PathClient({"/fields": FIXTURE["fields"]})  # pack list unreadable
+    monkeypatch.setattr(cli, "_get_connection", lambda t, c=None: (client, None))
+    r = CliRunner().invoke(cli.app, ["fields", "--name", "vmw_config_type"])
+    assert r.exit_code == 0, r.output
+    assert "pack namespace" in " ".join(r.output.split())

@@ -67,12 +67,12 @@ regression tests replay them (`tests/fixtures/li_8_18_7.json`).
 
 | Endpoint | Top level | Notes |
 |---|---|---|
-| `GET /fields` | JSON array | items `{displayName, internalName, fieldType, isStatic, extracted[, displayNamespace]}` |
+| `GET /fields` | JSON array | items `{displayName, internalName, fieldType, isStatic, extracted[, displayNamespace]}`; some fields appear twice, identically (`source`, `facility`) — listed once |
 | `GET /alerts` | JSON array | items carry `id` (UUID), `name`, `enabled`, `info`, `query`, `recipients`, `stats` |
 | `GET /alerts/{id}` | object | unknown UUID → HTTP 404; a non-UUID id → HTTP 500 |
 | `GET /alerts/{id}/history` | JSON array | records `{alertId, triggerTimestamp, acknowledged, resultUrl, messages}`, each with up to 10 messages `{text, timestamp, staticFields, extractedFields}` — captured from a temporary alert that fired twice, then deleted. No `triggerTimestampString`, though the API docs list one. `[]` for an alert that never fired. |
 | `GET /events/{c}` | object | `{complete, duration, numResults, events}` |
-| `GET /aggregated-events/{c}` | object | `bins: [{minTimestamp, maxTimestamp, *String, value}]`, newest first, empty bins omitted; `value` is an event for SAMPLE |
+| `GET /aggregated-events/{c}` | object | `bins: [{minTimestamp, maxTimestamp, *String, value}]`, newest first, empty bins omitted (the tool zero-fills them for COUNT/UCOUNT); `value` is an event for SAMPLE |
 | `GET /version` | object | `{releaseName, version}` — the build is the version's suffix |
 | `GET /content/contentpack` | object | `{contentPackMetadataList: [{name, namespace, ...}]}` — maps a field's `displayNamespace` (the pack's display name) to its namespace |
 
