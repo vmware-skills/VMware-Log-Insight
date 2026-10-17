@@ -77,14 +77,15 @@ alarms (monitor) or metric anomalies (aria). This skill only reads the log store
 ## Common Workflows
 
 ### 1. "Find the errors on a host in the last hour"
-1. `search_logs(text="error", last="1h", filters via CLI hostname=...)` — or CLI: `vmware-log-insight search -q error -l 1h`.
+1. `search_logs(text="error", last="1h")` — or CLI: `vmware-log-insight search -q error -l 1h`. There is no host filter parameter: read each event's `fields.hostname` / `fields.source`, or put the host name in `text` (whole tokens match: `esx01.lab.local` does, `esx01` alone may not).
 2. Read the `events[]` (timestamp + text + fields). Narrow with a more specific `text` if `complete=False` (result was truncated).
 3. **Failure branch — auth/connection error:** the teaching message names the cause (e.g. "503: appliance starting up"); run `vmware-log-insight doctor`. A 503 is a *status*, not a crash.
 
 ### 2. "Was there a log spike, and when?"
 1. `aggregate_logs(text="...", last="6h", bin_width_ms=300000)` — counts per 5-minute bin + `spikes[]` (z-score flagged).
 2. Take a spike's `timestamp_ms`, then `search_logs(begin_ms=..., end_ms=...)` around it to read what burst.
-3. **Failure branch — empty bins:** widen `last` or drop the `text` filter; confirm the appliance actually receives logs from the source.
+3. **Failure branch — empty bins:** widen `last` or drop the `text` filter; confirm the appliance actually receives logs from the source. Bins with no events are omitted, so a short series means quiet minutes, not missing data.
+4. Distinct hosts per bin: `aggregate_logs(aggregation="UCOUNT", field="hostname")`. Only COUNT and SAMPLE take no `field`; the other seven need one (names from `list_log_fields`).
 
 ### 3. Correlate logs into a root-cause timeline
 1. `search_logs` / `aggregate_logs` here for the log signal.
@@ -100,7 +101,7 @@ alarms (monitor) or metric anomalies (aria). This skill only reads the log store
 
 | Category | Tools |
 |---|---|
-| Logs | `search_logs` (time window + text + filters), `aggregate_logs` (COUNT/etc + spike detection), `list_log_fields`, `get_log_insight_version` |
+| Logs | `search_logs` (time window + text), `aggregate_logs` (COUNT/SAMPLE, or UCOUNT/AVG/MIN/MAX/SUM/STDDEV/VARIANCE of a `field`, + spike detection), `list_log_fields`, `get_log_insight_version` |
 | Alerts | `list_log_alerts`, `get_log_alert`, `get_log_alert_history` |
 
 **List envelope**: `list_log_fields`, `list_log_alerts` and `get_log_alert_history` return
@@ -111,7 +112,9 @@ collection in one GET and `limit` is applied client-side), so a page that exactl
 fills `limit` is still reported `truncated: false` when it is genuinely complete.
 
 **Query model**: time windows use a relative `last` ("1h", "30m", "7d") or an
-absolute `begin_ms`/`end_ms` (epoch ms); `text` is a CONTAINS search. See
+absolute `begin_ms`/`end_ms` (epoch ms — seconds are refused); `text` is a
+CONTAINS search that matches whole tokens, not substrings. `search_logs`
+returns at most 200 events (~650 chars each) and says so when it lowers `limit`. See
 `references/cli-reference.md` for the full constraint grammar.
 
 ## Read-Only by Design
@@ -137,7 +140,8 @@ vmware-log-insight mcp                                  # start MCP server (prox
 - **`POST /sessions returned HTTP 401`** — wrong username/password/provider. Check `config.yaml` (`provider: Local | ActiveDirectory`) and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
 - **`HTTP 503` on every call** — the appliance is starting or a service isn't ready; the error says so. Wait and retry; `doctor` reports it as a status, not a crash.
 - **`HTTP 400` on a search** — a malformed constraint. Time/field filters are path-encoded as `field/<OPERATOR value>` (e.g. `timestamp/LAST%203600000`); let the CLI/tool build them rather than hand-crafting.
-- **Empty results but logs exist** — check the time window (`last`) and that the appliance actually ingests from that source; widen the window.
+- **Empty results but logs exist** — check the time window (`last`) and that the appliance actually ingests from that source; widen the window. `text` matches whole tokens: `localdom` finds nothing where `localhost.localdomain` finds events.
+- **`UCOUNT needs a field` / `COUNT takes no field`** — the appliance answers HTTP 400 otherwise; pass `field=` only with UCOUNT/AVG/MIN/MAX/SUM/STDDEV/VARIANCE.
 - **Default port is 9543**, not 443 — set `port` in `config.yaml` if your appliance differs.
 
 ## Audit & Safety

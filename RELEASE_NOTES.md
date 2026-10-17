@@ -1,3 +1,33 @@
+## v2.4.1 — fixed against a real 8.18.7 appliance (VMware-AIops#45)
+
+First run of every tool on real hardware (Aria Operations for Logs 8.18.7-25423541, ingesting ESXi and vCenter
+syslog). Three of the seven tools failed on every call, because the tests mocked response shapes the appliance
+never sends. The regression tests now replay responses captured from that appliance
+(`tests/fixtures/li_8_18_7.json`).
+
+* **`list_log_fields`, `list_log_alerts`, `get_log_alert_history` work.** 8.18.7 answers these with a bare JSON
+  array; the code read it as an object and every call failed with `AttributeError: operation failed.` Field items are
+  now `{name, internal_name, type}` (`name` is the display name; content-pack fields add `namespace`).
+* **`aggregate_logs` bins have timestamps.** Bins carry `minTimestamp`/`maxTimestamp`; every `timestamp_ms` was
+  `null`, so spikes could not be placed in time. Bins are now `{timestamp_ms, end_ms, value}`, oldest first.
+* **`aggregate_logs` takes `field`** (CLI `--field`). UCOUNT, AVG, MIN, MAX, SUM, STDDEV and VARIANCE need one and
+  answered HTTP 400 without it; COUNT and SAMPLE refuse one. Both are now checked before the call. An unknown field
+  returns an empty series with a `note`. A SAMPLE bin's value (a raw event) is now sanitized.
+* **`search_logs` fills `hostname`, `appname` and `procid`.** On 8.18.7 these carry a position in the event text
+  instead of a value, and always came back as `""`.
+* **`search_logs` returns at most 200 events and says when it lowers `limit`.** The cap was 20000 and silent; 20000
+  events was a 16 MB result that took 31 s and was stored whole in the audit database.
+* **Windows longer than ~24.8 days work.** The appliance reads `LAST` as a 32-bit millisecond count and answered
+  HTTP 400; such a window is now sent as an absolute start time.
+* `begin_ms` after `end_ms`, and a value that looks like epoch seconds, are refused with the fix.
+* An alert id containing `/`, `?`, spaces or `..` is refused (`../version` used to reach `/version`). An unknown id
+  (HTTP 404, or 500 for a non-UUID) now says "copy an exact id", not "retry".
+* Errors say "run doctor" only when doctor can help (config, credentials, reachability). An unexpected error says it
+  is not an input problem.
+* `doctor` now reads `GET /fields` through the same code the tools use, so a broken query API no longer passes.
+* Docs: `search_logs` has no field-filter parameter (the docs said it had); `text` matches whole tokens, not
+  substrings; corrected token estimates.
+
 ## v2.4.0 — roles for network callers (HLD §18)
 
 * Declares the role metadata vmware-policy ≥ 1.24.0 needs to apply **roles** to this server over HTTPS

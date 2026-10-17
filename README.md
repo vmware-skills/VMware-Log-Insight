@@ -74,9 +74,9 @@ pip install --no-index --find-links dist vmware-log-insight
 
 | Tool | What |
 |---|---|
-| `search_logs` | Search events by time window + text + filters |
-| `aggregate_logs` | Count/aggregate over time bins, with z-score spike detection |
-| `list_log_fields` | List extracted fields usable in filters |
+| `search_logs` | Search events by time window + text (whole-token match), up to 200 events |
+| `aggregate_logs` | Count/aggregate over time bins (UCOUNT/AVG/... of a `field`), with z-score spike detection |
+| `list_log_fields` | List the appliance's fields (name + type), for `aggregate_logs` `field` |
 | `get_log_insight_version` | Appliance version/build |
 | `list_log_alerts` / `get_log_alert` / `get_log_alert_history` | Query defined alerts and their trigger history |
 
@@ -90,7 +90,8 @@ pip install --no-index --find-links dist vmware-log-insight
 
 - `401 on /sessions` → check username/password/`provider` and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
 - `503 everywhere` → appliance starting up; `doctor` reports it as a status, not a crash.
-- Empty results → widen `--last`; default API port is **9543** (set `port` if different).
+- Empty results → widen `--last`; `text` matches whole tokens, not substrings; default API port is **9543** (set `port` if different).
+- `UCOUNT needs a field` → pass `--field` (names from `fields`); COUNT and SAMPLE take none.
 
 ## Security
 

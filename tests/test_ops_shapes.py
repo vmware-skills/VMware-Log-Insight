@@ -16,7 +16,7 @@ from vmware_log_insight.ops.search import search_events
 class FakeClient:
     """Records the last GET path and returns a canned payload."""
 
-    def __init__(self, payload: dict):
+    def __init__(self, payload):
         self.payload = payload
         self.last_path = None
         self.last_params = None
@@ -57,13 +57,15 @@ def test_search_handles_dict_fields_variant():
 
 
 def test_aggregate_normalizes_bins_and_detects_spike():
-    bins = [{"timestamp": i, "value": 1} for i in range(9)]
-    bins.append({"timestamp": 9, "value": 50})
+    # 8.18.7 bin shape: minTimestamp/maxTimestamp, not timestamp.
+    bins = [{"minTimestamp": i * 60000, "maxTimestamp": i * 60000 + 59999, "value": 1} for i in range(9)]
+    bins.append({"minTimestamp": 540000, "maxTimestamp": 599999, "value": 50})
     client = FakeClient({"bins": bins})
     out = aggregate_events(client, last="1h", aggregation="count")
     assert out["aggregation"] == "COUNT"
     assert len(out["bins"]) == 10
     assert out["spikes"] and out["spikes"][-1]["value"] == 50
+    assert out["spikes"][-1]["timestamp_ms"] == 540000
 
 
 def test_aggregate_rejects_unknown_function():
@@ -78,20 +80,23 @@ def test_detect_spikes_needs_baseline():
 
 
 def test_list_fields_filters():
-    client = FakeClient({"fields": [{"name": "hostname"}, {"name": "appname"}]})
+    client = FakeClient(
+        [
+            {"displayName": "hostname", "internalName": "hostname", "fieldType": "STRING"},
+            {"displayName": "appname", "internalName": "appname", "fieldType": "STRING"},
+        ]
+    )
     out = list_fields(client, name_filter="host")
-    assert out["items"] == [{"name": "hostname"}]
+    assert out["items"] == [{"name": "hostname", "internal_name": "hostname", "type": "STRING"}]
 
 
 def test_list_alerts_summary_and_limit():
-    client = FakeClient(
-        {"alerts": [{"id": "a1", "name": "Disk full", "enabled": True, "info": "x"}]}
-    )
+    client = FakeClient([{"id": "a1", "name": "Disk full", "enabled": True, "info": "x"}])
     out = list_alerts(client, limit=5)["items"]
     assert out[0]["id"] == "a1" and out[0]["enabled"] is True
 
 
 def test_alert_history_variant_keys():
-    client = FakeClient({"records": [{"time": 5, "message": "fired"}]})
+    client = FakeClient([{"time": 5, "message": "fired"}])
     out = get_alert_history(client, "a1")
     assert out["items"] == [{"timestamp_ms": 5, "info": "fired"}]

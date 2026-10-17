@@ -42,7 +42,7 @@ def list_log_alerts(
 
         return list_alerts(server._get_connection(target), name_filter=name_filter, limit=limit)
     except Exception as e:
-        return {"error": server._safe_error(e, "list_log_alerts"), "hint": "Run 'vmware-log-insight doctor'."}
+        return server._error_result(e, "list_log_alerts")
 
 
 @mcp.tool(annotations=_READ)
@@ -58,9 +58,10 @@ def get_log_alert(alert_id: str, target: Optional[str] = None) -> dict:
 
     Args:
         alert_id: The alert id exactly as returned in an list_log_alerts row's 'id'
-            field (not the alert's name). An empty string is refused with a
-            message telling you to run list_log_alerts; a well-formed but unknown id
-            comes back as a 404 from the appliance.
+            field (not the alert's name). An empty or malformed id (anything
+            with '/', '?', spaces, or '..') is refused before any call; an
+            unknown id comes back as HTTP 404 (500 for an id that is not a
+            UUID) on 8.18.7, reported as "copy an exact id", not "retry".
         target: Log Insight target name as spelled in
             ~/.vmware-log-insight/config.yaml. Omit to use that file's
             default_target — with no default configured, omitting it is an error
@@ -73,7 +74,7 @@ def get_log_alert(alert_id: str, target: Optional[str] = None) -> dict:
 
         return get_alert(server._get_connection(target), alert_id)
     except Exception as e:
-        return {"error": server._safe_error(e, "get_log_alert"), "hint": "Run 'vmware-log-insight doctor'."}
+        return server._error_result(e, "get_log_alert")
 
 
 @mcp.tool(annotations=_READ)
@@ -83,14 +84,16 @@ def get_log_alert_history(alert_id: str, limit: int = 50, target: Optional[str] 
 
     Use this for when an alert fired, not how it's defined.
     Returns the family list envelope {items, returned, limit, total, truncated,
-    hint}; each item is {timestamp_ms, info}. total is the real history-record
+    hint}; each item is {timestamp_ms, info} (record keys not yet seen on a
+    real appliance — every 8.18.7 alert tested had an empty history, which is
+    an empty list, not an error). total is the real history-record
     count, so truncated answers whether older records were left behind — raise
     limit when true. Read-only.
 
     Args:
         alert_id: The alert id exactly as returned in an list_log_alerts row's 'id'
-            field (not the alert's name). An empty string is refused with a
-            message telling you to run list_log_alerts first.
+            field (not the alert's name). An empty or malformed id is refused
+            before any call; an unknown id is HTTP 404 (or 500) on 8.18.7.
         limit: Maximum history records returned, most recent first as the
             appliance orders them (default 50). There is no offset — the
             appliance hands back the whole history in one call and this slices
@@ -108,4 +111,4 @@ def get_log_alert_history(alert_id: str, limit: int = 50, target: Optional[str] 
 
         return get_alert_history(server._get_connection(target), alert_id, limit=limit)
     except Exception as e:
-        return {"error": server._safe_error(e, "get_log_alert_history"), "hint": "Run 'vmware-log-insight doctor'."}
+        return server._error_result(e, "get_log_alert_history")

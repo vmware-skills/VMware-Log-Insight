@@ -31,6 +31,8 @@ from vmware_log_insight.config import CONFIG_FILE, load_config
 # _safe_error,
 # mcp, _get_connection` (and monkeypatch targets) keep resolving.
 from vmware_log_insight.mcp_server._shared import (  # noqa: F401
+    _ERROR_HINT,
+    _error_result,
     _get_connection,
     _safe_error,
     logger,
@@ -99,6 +101,7 @@ __all__ = [
     "main",
     "_environment_for",
     "_safe_error",
+    "_error_result",
     "_get_connection",
     "search_logs",
     "aggregate_logs",

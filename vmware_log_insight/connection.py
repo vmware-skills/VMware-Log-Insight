@@ -320,8 +320,12 @@ class LogInsightClient:
                 )
             return resp
 
-    def get(self, path: str, params: dict[str, Any] | None = None, *, retries: int = 1) -> dict:
+    def get(self, path: str, params: dict[str, Any] | None = None, *, retries: int = 1) -> Any:
         """Single GET request. Returns parsed JSON (or {} for an empty body).
+
+        Parsed JSON is not always an object: on 8.18.7 ``/fields``, ``/alerts``
+        and ``/alerts/{id}/history`` are bare arrays. Callers check the shape
+        with ``ops._shape`` rather than trusting an annotation.
 
         Pass retries=0 for probes where an error status is itself the answer
         (e.g. a liveness check) to skip the transient back-off.

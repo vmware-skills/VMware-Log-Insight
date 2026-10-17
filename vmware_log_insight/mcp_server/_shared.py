@@ -89,6 +89,23 @@ def _safe_error(exc: Exception, tool: str) -> str:
     return f"{type(exc).__name__}: operation failed."
 
 
+# One hint, true for every failure, rather than "Run doctor" on every error.
+# That old hint was appended to a bad argument, a wrong alert id and an
+# empty-window refusal alike — advice that fixes none of them. The error text
+# says which case this is; the hint says where each case goes.
+_ERROR_HINT = (
+    "Argument problem: the error names the fix — correct it and call again "
+    "(ids: list_log_alerts; field names: list_log_fields). Config, password or "
+    "reachability: run `vmware-log-insight doctor`. 'operation failed' alone is "
+    "not an input problem; the MCP server log has the traceback."
+)
+
+
+def _error_result(exc: Exception, tool: str) -> dict:
+    """The payload a tool returns for a caught exception."""
+    return {"error": _safe_error(exc, tool), "hint": _ERROR_HINT}
+
+
 _BASE_INSTRUCTIONS = (
     "VMware Aria Operations for Logs (vRealize Log Insight): read-only log "
     "search, aggregation/spike detection, field discovery, and alert queries. "

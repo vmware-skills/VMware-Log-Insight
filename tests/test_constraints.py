@@ -37,13 +37,13 @@ def test_text_becomes_contains_segment():
 
 
 def test_absolute_window():
-    c = build_constraints(begin_ms=1000, end_ms=2000)
-    assert c == "timestamp/%3E%201000/timestamp/%3C%202000"
+    c = build_constraints(begin_ms=1700000001000, end_ms=1700000002000)
+    assert c == "timestamp/%3E%201700000001000/timestamp/%3C%201700000002000"
 
 
 def test_last_and_absolute_are_mutually_exclusive():
     with pytest.raises(ValueError):
-        build_constraints(last="1h", begin_ms=1000)
+        build_constraints(last="1h", begin_ms=1700000001000)
 
 
 def test_filters_and_value_escaping():

@@ -96,6 +96,23 @@ def run_doctor(config_path: Path | None = None, skip_auth: bool = False) -> bool
                     checks.append((f"Version ({name})", True, ver.get("version") or "unknown"))
                 except Exception as e:
                     checks.append((f"Version ({name})", False, str(e)))
+                # Login and /version passing proved nothing about the query
+                # API: up to 2.4.0 doctor was all green while list_log_fields,
+                # list_log_alerts and aggregate_logs failed on every call,
+                # because they read shapes 8.18.7 never sends. Read one through
+                # the same code the tools use.
+                try:
+                    from vmware_log_insight.ops.fields import list_fields
+
+                    total = list_fields(client)["total"]
+                    if total:
+                        checks.append((f"Query API ({name})", True, f"{total} fields listed"))
+                    else:
+                        checks.append(
+                            (f"Query API ({name})", False, "GET /fields returned no fields")
+                        )
+                except Exception as e:
+                    checks.append((f"Query API ({name})", False, str(e)))
                 mgr.disconnect(name)
             except Exception as e:
                 checks.append((f"Auth ({name})", False, str(e)))

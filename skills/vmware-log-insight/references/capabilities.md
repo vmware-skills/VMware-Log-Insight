@@ -5,9 +5,9 @@ base `https://<host>:9543/api/v2`, session auth (Bearer). All tools read-only.
 
 | Tool | Endpoint | What it returns | Typical response tokens |
 |---|---|---|---|
-| `search_logs` | GET /events/{constraints} | `{count, complete, constraints, events:[{timestamp_ms, text, fields}]}` | 400–4000 (scales with limit) |
-| `aggregate_logs` | GET /aggregated-events/{constraints} | `{aggregation, bin_width_ms, bins:[...], spikes:[...]}` | 200–1500 |
-| `list_log_fields` | GET /fields | envelope of `[{name}]` | 100–800 |
+| `search_logs` | GET /events/{constraints} | `{count, complete, constraints, events:[{timestamp_ms, text, fields}]}` (+ `note` when `limit` was lowered) | ~160 per event: ~8000 at the default 50, ~32000 at the 200 cap |
+| `aggregate_logs` | GET /aggregated-events/{constraints} | `{aggregation, field, bin_width_ms, bins:[{timestamp_ms, end_ms, value}], spikes:[...]}` | ~1100 for 1h of 1-minute bins |
+| `list_log_fields` | GET /fields | envelope of `[{name, internal_name, type}]` | ~500 filtered; ~15000 unfiltered (~340 fields) |
 | `get_log_insight_version` | GET /version | `{version, release_name, build}` | ~40 |
 | `list_log_alerts` | GET /alerts | envelope of `[{id, name, enabled, info}]` | 100–1500 |
 | `get_log_alert` | GET /alerts/{id} | `{id, name, enabled, info, raw_keys}` | 100–400 |
@@ -42,13 +42,37 @@ match count is already in hand. Two consequences worth relying on —
 
 ## High-signal design
 
-- **Search over list**: `search_logs` defaults to `limit=50` and a 1-hour window;
-  narrow with `text`/filters rather than raising the limit. `complete=False`
-  signals server-side truncation.
+- **Search over list**: `search_logs` defaults to `limit=50` and a 1-hour window,
+  and returns at most 200 events (a larger `limit` is lowered and `note` says so;
+  the appliance would send 20000, which on 8.18.7 was 16 MB and 31 s). Narrow with
+  `text` or the window rather than raising the limit. `complete=False` signals
+  server-side truncation.
 - **Spike detection in-tool**: `aggregate_logs` returns z-score-flagged `spikes[]`
   so the agent gets "where did logs burst?" without scanning raw events.
-- **Field flattening**: Log Insight's `fields: [{name, content}]` is flattened to
-  a `{name: content}` dict; all text is `sanitize()`d (truncated + control-char stripped).
+- **Field flattening**: Log Insight's `fields` list is flattened to a `{name: value}`
+  dict. Most entries carry `content`; on 8.18.7 the syslog header fields
+  (`hostname`, `appname`, `procid`) instead carry `startPosition` + `length` into
+  the event text, and the value is sliced from it. All text is `sanitize()`d
+  (truncated + control-char stripped).
+
+## Verified response shapes (8.18.7)
+
+Captured read-only from a live 8.18.7-25423541 appliance on 2026-10-17; the
+regression tests replay them (`tests/fixtures/li_8_18_7.json`).
+
+| Endpoint | Top level | Notes |
+|---|---|---|
+| `GET /fields` | JSON array | items `{displayName, internalName, fieldType, isStatic, extracted[, displayNamespace]}` |
+| `GET /alerts` | JSON array | items carry `id` (UUID), `name`, `enabled`, `info`, `query`, `recipients`, `stats` |
+| `GET /alerts/{id}` | object | unknown UUID → HTTP 404; a non-UUID id → HTTP 500 |
+| `GET /alerts/{id}/history` | JSON array | empty on every alert tested, so record keys are unverified |
+| `GET /events/{c}` | object | `{complete, duration, numResults, events}` |
+| `GET /aggregated-events/{c}` | object | `bins: [{minTimestamp, maxTimestamp, *String, value}]`, newest first, empty bins omitted; `value` is an event for SAMPLE |
+| `GET /version` | object | `{releaseName, version}` — the build is the version's suffix |
+
+Aggregation functions: COUNT and SAMPLE answer HTTP 400 with an
+`aggregation-field`; UCOUNT, AVG, MIN, MAX, SUM, STDDEV and VARIANCE answer
+HTTP 400 without one. An unknown field name returns an empty series, not an error.
 
 ## Auth & connection
 

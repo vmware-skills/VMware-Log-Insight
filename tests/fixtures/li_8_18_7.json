@@ -1,0 +1,617 @@
+{
+ "_comment": "Captured read-only from Aria Operations for Logs 8.18.7-25423541 on 2026-10-17 (lab appliance). IPs and ids scrubbed; structure untouched. Do not hand-edit shapes: recapture instead.",
+ "version": {
+  "releaseName": "GA",
+  "version": "8.18.7-25423541"
+ },
+ "fields": [
+  {
+   "isStatic": true,
+   "fieldType": "MESSAGE_TEXT",
+   "displayName": "text",
+   "internalName": "text",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "STRING",
+   "displayName": "appname",
+   "internalName": "appname",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "EVENT_TYPE",
+   "displayName": "event_type",
+   "internalName": "event_type",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "STRING",
+   "displayName": "facility",
+   "internalName": "facility",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "STRING",
+   "displayName": "hostname",
+   "internalName": "hostname",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "STRING",
+   "displayName": "priority",
+   "internalName": "priority",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "NUMBER",
+   "displayName": "procid",
+   "internalName": "procid",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "STRING",
+   "displayName": "source",
+   "internalName": "__li_source_path",
+   "extracted": false
+  },
+  {
+   "isStatic": true,
+   "fieldType": "STRING",
+   "displayName": "source",
+   "internalName": "__li_source_path",
+   "extracted": false
+  },
+  {
+   "isStatic": false,
+   "fieldType": "STRING",
+   "displayName": "vmw_esxi_scsi_additional_sense_code",
+   "internalName": "ibadcoc7mnxw2ltwnv3wc4tffz3hg4dimvzgk5tno5pwk43ynfpxgy3tnfpwczdenf2gs33omfwf643fnzzwkx3dn5sgk000",
+   "displayNamespace": "VMware - vSphere",
+   "extracted": true
+  },
+  {
+   "isStatic": false,
+   "fieldType": "STRING",
+   "displayName": "vmw_esxi_scsi_additional_sense_code_qualifier",
+   "internalName": "ibadcoc7mnxw2ltwnv3wc4tffz3hg4dimvzgk5tno5pwk43ynfpxgy3tnfpwczdenf2gs33omfwf643fnzzwkx3dn5sgkx3rovqwy2lgnfsxe000",
+   "displayNamespace": "VMware - vSphere",
+   "extracted": true
+  },
+  {
+   "isStatic": false,
+   "fieldType": "STRING",
+   "displayName": "vmw_config_type",
+   "internalName": "ibadcoc7mnxw2ltwnv3wc4tffz3hg4dimvzgk5tno5pwg33omzuwox3upfygk000",
+   "displayNamespace": "VMware - vSphere",
+   "extracted": true
+  },
+  {
+   "isStatic": false,
+   "fieldType": "STRING",
+   "displayName": "vmw_device_changed",
+   "internalName": "ibadcoc7mnxw2ltwnv3wc4tffz3hg4dimvzgk5tno5pwizlwnfrwkx3dnbqw4z3fmq000000",
+   "displayNamespace": "VMware - vSphere",
+   "extracted": true
+  }
+ ],
+ "alerts": [
+  {
+   "id": "00000000-0000-4000-8000-b0a745e61112",
+   "enabled": false,
+   "type": "RATE_BASED",
+   "name": "vRops: FDR exceeded the maximum number of entries",
+   "hitCount": 3.0,
+   "hitOperator": "GREATER_THAN",
+   "searchPeriod": 3600000,
+   "searchInterval": 600000,
+   "info": "This alert indicates that FORWARD_DATA_REGION exceeded the maximum number of entries in a specific time. This could indicate issues in the cluster environment.",
+   "contentPackNamespace": "com.vmware.vrops67",
+   "contentPackName": "VMware - vROps 6.7+",
+   "stats": {
+    "lastRanAt": 0,
+    "nextRunAt": 0,
+    "lastRunTime": 0,
+    "totalRunTime": 0,
+    "lastHitAt": 0,
+    "runCount": 0
+   },
+   "recipients": {
+    "emails": [],
+    "webhookIds": [],
+    "vrops": {
+     "vcopsCriticality": "none",
+     "autoClearAlertAfterTimeout": false,
+     "autoClearAlertsTimeoutMinutes": 0
+    }
+   },
+   "query": {
+    "chartQuery": "{\"query\":\"FORWARD_DATA_REGION region exceed the maximum number of entries. Rejecting put in region FORWARD_DATA_REGION\",\"startTimeMillis\":1457948565720,\"endTimeMillis\":1457952165719,\"piqlFunctionGroups\":[{\"functions\":[{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false}],\"field\":null}],\"dateFilterPreset\":\"CUSTOM\",\"shouldGroupByTime\":true,\"includeAllContentPackFields\":true,\"eventSortOrder\":\"DESC\",\"summarySortOrder\":\"DESC\",\"compareQueryOrderBy\":\"TREND\",\"compareQuerySortOrder\":\"DESC\",\"compareQueryOptions\":null,\"messageViewType\":\"EVENTS\",\"constraintToggle\":\"ALL\",\"piqlFunction\":{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false},\"piqlFunctionField\":null,\"fieldConstraints\":[{\"internalName\":\"vmw_vr_ops_appname\",\"operator\":\"EXISTS\"}],\"supplementalConstraints\":[],\"groupByFields\":[],\"contentPacksToIncludeFields\":[],\"extractedFields\":[]}"
+   }
+  },
+  {
+   "id": "00000000-0000-4000-8000-2b700b2c742d",
+   "enabled": false,
+   "type": "RATE_BASED",
+   "name": "vRops: xDB Xhive exception messages",
+   "hitCount": 3.0,
+   "hitOperator": "GREATER_THAN",
+   "searchPeriod": 3600000,
+   "searchInterval": 600000,
+   "info": "<span>XhiveException is the base exception used throughout all of xDB. It is thrown when some database operation did not complete in the normal way. Such exceptions might stem from fatal conditions or recoverable problems and would need more analysis to root cause the real issue.&nbsp;</span><br>",
+   "contentPackNamespace": "com.vmware.vrops67",
+   "contentPackName": "VMware - vROps 6.7+",
+   "stats": {
+    "lastRanAt": 0,
+    "nextRunAt": 0,
+    "lastRunTime": 0,
+    "totalRunTime": 0,
+    "lastHitAt": 0,
+    "runCount": 0
+   },
+   "recipients": {
+    "emails": [],
+    "webhookIds": [],
+    "vrops": {
+     "vcopsCriticality": "none",
+     "autoClearAlertAfterTimeout": false,
+     "autoClearAlertsTimeoutMinutes": 0
+    }
+   },
+   "query": {
+    "chartQuery": "{\"query\":\"\",\"startTimeMillis\":1545389164758,\"endTimeMillis\":1545392764757,\"piqlFunctionGroups\":[{\"functions\":[{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false}],\"field\":null}],\"dateFilterPreset\":\"CUSTOM\",\"shouldGroupByTime\":true,\"includeAllContentPackFields\":true,\"eventSortOrder\":\"DESC\",\"summarySortOrder\":\"DESC\",\"compareQueryOrderBy\":\"TREND\",\"compareQuerySortOrder\":\"DESC\",\"compareQueryOptions\":null,\"messageViewType\":\"EVENTS\",\"constraintToggle\":\"ALL\",\"piqlFunction\":{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false},\"piqlFunctionField\":null,\"fieldConstraints\":[{\"internalName\":\"ibadcoc7mnxw2ltwnv3wc4tffz3he33qom3do5tno5pxm4s7n5yhgx3fpbrwk4dunfxw4x3ynbuxmzk7nrxwg2y0\",\"operator\":\"EXISTS\"}],\"supplementalConstraints\":[],\"groupByFields\":[],\"contentPacksToIncludeFields\":[],\"extractedFields\":[{\"displayName\":\"vmw_vr_ops_exception_xhive_lock\",\"preContext\":\"XDBTransactionService\\\\.isRetriable - Received \",\"postContext\":\"\\\\.LOCK_NOT_GRANTED\",\"regexValue\":\"\\\\w+\",\"internalName\":\"ibadcoc7mnxw2ltwnv3wc4tffz3he33qom3do5tno5pxm4s7n5yhgx3fpbrwk4dunfxw4x3ynbuxmzk7nrxwg2y0\",\"constraints\":\"{\\\"filters\\\":[{\\\"hidden\\\":false,\\\"internalName\\\":\\\"vmw_vr_ops_appname\\\",\\\"displayName\\\":\\\"vmw_vr_ops_appname\\\",\\\"operator\\\":\\\"EXISTS\\\",\\\"fieldType\\\":\\\"STRING\\\",\\\"isExtracted\\\":false}]}\"}]}",
+    "messageQuery": ""
+   }
+  },
+  {
+   "id": "00000000-0000-4000-8000-7b2f9fac1ab2",
+   "enabled": false,
+   "type": "RATE_BASED",
+   "name": "vRops: Unauthenticated access attempt",
+   "hitCount": 3.0,
+   "hitOperator": "GREATER_THAN",
+   "searchPeriod": 3600000,
+   "searchInterval": 600000,
+   "info": "<span><span>The purpose of this alert is to notify when accessing the VMware vRealize Operations Manager 6.0 API by LDAP users fails with the error: HTTP/1.1 401 Unauthorized</span> (2103084). For more information, have a look at the KB - &nbsp;<br><br><a href=\"http://kb.vmware.com/kb/2103084\">http://kb.vmware.com/kb/2103084</a><br></span>",
+   "contentPackNamespace": "com.vmware.vrops67",
+   "contentPackName": "VMware - vROps 6.7+",
+   "stats": {
+    "lastRanAt": 0,
+    "nextRunAt": 0,
+    "lastRunTime": 0,
+    "totalRunTime": 0,
+    "lastHitAt": 0,
+    "runCount": 0
+   },
+   "recipients": {
+    "emails": [],
+    "webhookIds": [],
+    "vrops": {
+     "vcopsCriticality": "none",
+     "autoClearAlertAfterTimeout": false,
+     "autoClearAlertsTimeoutMinutes": 0
+    }
+   },
+   "query": {
+    "chartQuery": "{\"query\":\"\",\"startTimeMillis\":1545388995927,\"endTimeMillis\":1545392595926,\"piqlFunctionGroups\":[{\"functions\":[{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false}],\"field\":null}],\"dateFilterPreset\":\"CUSTOM\",\"shouldGroupByTime\":true,\"includeAllContentPackFields\":true,\"eventSortOrder\":\"DESC\",\"summarySortOrder\":\"DESC\",\"compareQueryOrderBy\":\"TREND\",\"compareQuerySortOrder\":\"DESC\",\"compareQueryOptions\":null,\"messageViewType\":\"EVENTS\",\"constraintToggle\":\"ALL\",\"piqlFunction\":{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false},\"piqlFunctionField\":null,\"fieldConstraints\":[{\"internalName\":\"ibadcoc7mnxw2ltwnv3wc4tffz3he33qom3do5tno5pxm4s7n5yhgx3fpbrwk4dunfxw4x3bov2gqzlooruwgylunfxw4000\",\"operator\":\"EXISTS\"},{\"internalName\":\"vmw_vr_ops_appname\",\"operator\":\"EXISTS\"}],\"supplementalConstraints\":[],\"groupByFields\":[],\"contentPacksToIncludeFields\":[],\"extractedFields\":[{\"displayName\":\"vmw_vr_ops_exception_authentication\",\"preContext\":\"exception\\\\.\",\"postContext\":\": Got\",\"regexValue\":\"\\\\w+\",\"internalName\":\"ibadcoc7mnxw2ltwnv3wc4tffz3he33qom3do5tno5pxm4s7n5yhgx3fpbrwk4dunfxw4x3bov2gqzlooruwgylunfxw4000\",\"constraints\":\"{\\\"filters\\\":[{\\\"internalName\\\":\\\"vmw_vr_ops_appname\\\",\\\"displayName\\\":\\\"vmw_vr_ops_appname\\\",\\\"operator\\\":\\\"EXISTS\\\",\\\"fieldType\\\":\\\"STRING\\\",\\\"isExtracted\\\":false,\\\"hidden\\\":false}]}\"}]}",
+    "messageQuery": ""
+   }
+  }
+ ],
+ "alert": {
+  "id": "00000000-0000-4000-8000-b0a745e61112",
+  "enabled": false,
+  "type": "RATE_BASED",
+  "name": "vRops: FDR exceeded the maximum number of entries",
+  "hitCount": 3.0,
+  "hitOperator": "GREATER_THAN",
+  "searchPeriod": 3600000,
+  "searchInterval": 600000,
+  "info": "This alert indicates that FORWARD_DATA_REGION exceeded the maximum number of entries in a specific time. This could indicate issues in the cluster environment.",
+  "contentPackNamespace": "com.vmware.vrops67",
+  "contentPackName": "VMware - vROps 6.7+",
+  "stats": {
+   "lastRanAt": 0,
+   "nextRunAt": 0,
+   "lastRunTime": 0,
+   "totalRunTime": 0,
+   "lastHitAt": 0,
+   "runCount": 0
+  },
+  "recipients": {
+   "emails": [],
+   "webhookIds": [],
+   "vrops": {
+    "vcopsCriticality": "none",
+    "autoClearAlertAfterTimeout": false,
+    "autoClearAlertsTimeoutMinutes": 0
+   }
+  },
+  "query": {
+   "chartQuery": "{\"query\":\"FORWARD_DATA_REGION region exceed the maximum number of entries. Rejecting put in region FORWARD_DATA_REGION\",\"startTimeMillis\":1792234497954,\"endTimeMillis\":1792238097953,\"piqlFunctionGroups\":[{\"functions\":[{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false}],\"field\":null}],\"dateFilterPreset\":\"CUSTOM\",\"shouldGroupByTime\":true,\"includeAllContentPackFields\":true,\"eventSortOrder\":\"DESC\",\"summarySortOrder\":\"DESC\",\"compareQueryOrderBy\":\"TREND\",\"compareQuerySortOrder\":\"DESC\",\"compareQueryOptions\":null,\"messageViewType\":\"EVENTS\",\"constraintToggle\":\"ALL\",\"piqlFunction\":{\"label\":\"Count\",\"value\":\"COUNT\",\"requiresField\":false,\"numericOnly\":false},\"piqlFunctionField\":null,\"fieldConstraints\":[{\"internalName\":\"vmw_vr_ops_appname\",\"displayNamespace\":null,\"displayName\":\"vmw_vr_ops_appname\",\"fieldType\":\"STRING\",\"isExtracted\":false,\"operator\":\"EXISTS\",\"value\":null}],\"supplementalConstraints\":[],\"groupByFields\":[],\"contentPacksToIncludeFields\":[],\"orphanedFields\":[]}"
+  }
+ },
+ "alert_history": [],
+ "events": {
+  "complete": true,
+  "duration": 13,
+  "numResults": 2,
+  "events": [
+   {
+    "text": "2026-10-17T11:54:19.762Z localhost.localdomain envoy[1049382]: \"2026-10-17T11:54:19.652Z info envoy[1049604] [Originator@6876 sub=connection] [Tags: \"ConnectionId\":\"289136\"] remote address:10.0.0.16:56895,TLS_error:|268436502:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN\"",
+    "timestamp": 1792238059764,
+    "timestampString": "2026-10-17 11:54:19.764 GMT+00:00",
+    "fields": [
+     {
+      "name": "procid",
+      "startPosition": 53,
+      "length": 7
+     },
+     {
+      "name": "priority",
+      "content": "info"
+     },
+     {
+      "name": "vmw_vcenter_id",
+      "content": "00000000-0000-4000-8000-b63d0b21ed46"
+     },
+     {
+      "name": "vmw_vcenter",
+      "content": "10.0.0.116"
+     },
+     {
+      "name": "vmw_vr_ops_id",
+      "content": "00000000-0000-4000-8000-d79492e501ee"
+     },
+     {
+      "name": "hostname",
+      "startPosition": 25,
+      "length": 21
+     },
+     {
+      "name": "vmw_datacenter",
+      "content": "home"
+     },
+     {
+      "name": "event_type",
+      "content": "v4_b96478f3"
+     },
+     {
+      "name": "vmw_object_id",
+      "content": "host-10"
+     },
+     {
+      "name": "appname",
+      "startPosition": 47,
+      "length": 5
+     },
+     {
+      "name": "source",
+      "content": "10.0.0.118"
+     },
+     {
+      "name": "facility",
+      "content": "local4"
+     }
+    ]
+   },
+   {
+    "text": "2026-10-17T11:54:19.762Z localhost.localdomain envoy[1049382]: \"2026-10-17T11:54:19.652Z info envoy[1049604] [Originator@6876 sub=connection] [Tags: \"ConnectionId\":\"289136\"] remote address:10.0.0.16:56895,TLS_error:|268436502:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN\"",
+    "timestamp": 1792238059764,
+    "timestampString": "2026-10-17 11:54:19.764 GMT+00:00",
+    "fields": [
+     {
+      "name": "procid",
+      "startPosition": 53,
+      "length": 7
+     },
+     {
+      "name": "priority",
+      "content": "info"
+     },
+     {
+      "name": "vmw_vcenter_id",
+      "content": "00000000-0000-4000-8000-b63d0b21ed46"
+     },
+     {
+      "name": "vmw_vcenter",
+      "content": "10.0.0.116"
+     },
+     {
+      "name": "vmw_vr_ops_id",
+      "content": "00000000-0000-4000-8000-d79492e501ee"
+     },
+     {
+      "name": "hostname",
+      "startPosition": 25,
+      "length": 21
+     },
+     {
+      "name": "vmw_datacenter",
+      "content": "home"
+     },
+     {
+      "name": "event_type",
+      "content": "v4_b96478f3"
+     },
+     {
+      "name": "vmw_object_id",
+      "content": "host-10"
+     },
+     {
+      "name": "appname",
+      "startPosition": 47,
+      "length": 5
+     },
+     {
+      "name": "source",
+      "content": "10.0.0.118"
+     },
+     {
+      "name": "facility",
+      "content": "local4"
+     }
+    ]
+   }
+  ]
+ },
+ "aggregate_count": {
+  "complete": true,
+  "duration": 14,
+  "numResults": 11,
+  "bins": [
+   {
+    "minTimestamp": 1792238040000,
+    "minTimestampString": "2026-10-17 11:54:00.000 GMT+00:00",
+    "maxTimestamp": 1792238099999,
+    "maxTimestampString": "2026-10-17 11:54:59.999 GMT+00:00",
+    "value": 854
+   },
+   {
+    "minTimestamp": 1792237980000,
+    "minTimestampString": "2026-10-17 11:53:00.000 GMT+00:00",
+    "maxTimestamp": 1792238039999,
+    "maxTimestampString": "2026-10-17 11:53:59.999 GMT+00:00",
+    "value": 2322
+   },
+   {
+    "minTimestamp": 1792237920000,
+    "minTimestampString": "2026-10-17 11:52:00.000 GMT+00:00",
+    "maxTimestamp": 1792237979999,
+    "maxTimestampString": "2026-10-17 11:52:59.999 GMT+00:00",
+    "value": 2673
+   },
+   {
+    "minTimestamp": 1792237860000,
+    "minTimestampString": "2026-10-17 11:51:00.000 GMT+00:00",
+    "maxTimestamp": 1792237919999,
+    "maxTimestampString": "2026-10-17 11:51:59.999 GMT+00:00",
+    "value": 2344
+   },
+   {
+    "minTimestamp": 1792237800000,
+    "minTimestampString": "2026-10-17 11:50:00.000 GMT+00:00",
+    "maxTimestamp": 1792237859999,
+    "maxTimestampString": "2026-10-17 11:50:59.999 GMT+00:00",
+    "value": 2833
+   },
+   {
+    "minTimestamp": 1792237740000,
+    "minTimestampString": "2026-10-17 11:49:00.000 GMT+00:00",
+    "maxTimestamp": 1792237799999,
+    "maxTimestampString": "2026-10-17 11:49:59.999 GMT+00:00",
+    "value": 2679
+   },
+   {
+    "minTimestamp": 1792237680000,
+    "minTimestampString": "2026-10-17 11:48:00.000 GMT+00:00",
+    "maxTimestamp": 1792237739999,
+    "maxTimestampString": "2026-10-17 11:48:59.999 GMT+00:00",
+    "value": 2571
+   },
+   {
+    "minTimestamp": 1792237620000,
+    "minTimestampString": "2026-10-17 11:47:00.000 GMT+00:00",
+    "maxTimestamp": 1792237679999,
+    "maxTimestampString": "2026-10-17 11:47:59.999 GMT+00:00",
+    "value": 2684
+   },
+   {
+    "minTimestamp": 1792237560000,
+    "minTimestampString": "2026-10-17 11:46:00.000 GMT+00:00",
+    "maxTimestamp": 1792237619999,
+    "maxTimestampString": "2026-10-17 11:46:59.999 GMT+00:00",
+    "value": 2660
+   },
+   {
+    "minTimestamp": 1792237500000,
+    "minTimestampString": "2026-10-17 11:45:00.000 GMT+00:00",
+    "maxTimestamp": 1792237559999,
+    "maxTimestampString": "2026-10-17 11:45:59.999 GMT+00:00",
+    "value": 3009
+   },
+   {
+    "minTimestamp": 1792237440000,
+    "minTimestampString": "2026-10-17 11:44:00.000 GMT+00:00",
+    "maxTimestamp": 1792237499999,
+    "maxTimestampString": "2026-10-17 11:44:59.999 GMT+00:00",
+    "value": 1737
+   }
+  ]
+ },
+ "aggregate_sample": {
+  "complete": true,
+  "duration": 30,
+  "numResults": 3,
+  "bins": [
+   {
+    "minTimestamp": 1792237800000,
+    "minTimestampString": "2026-10-17 11:50:00.000 GMT+00:00",
+    "maxTimestamp": 1792238099999,
+    "maxTimestampString": "2026-10-17 11:54:59.999 GMT+00:00",
+    "value": {
+     "text": "2026-10-17T11:54:17.003Z localhost.localdomain Vpxa[1049870]: [Originator@6876 sub=vpxaInvtHost opID=resourcePoolImpl.cpp:1680-29460c07] Increment master gen. no to (2815): ResourcePool:VpxaInvtHostResPoolListener::ConfigChanged",
+     "timestamp": 1792238056999,
+     "timestampString": "2026-10-17 11:54:16.999 GMT+00:00",
+     "fields": [
+      {
+       "name": "procid",
+       "startPosition": 52,
+       "length": 7
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      },
+      {
+       "name": "hostname",
+       "startPosition": 25,
+       "length": 21
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_288df363"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "startPosition": 47,
+       "length": 4
+      },
+      {
+       "name": "source",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      }
+     ]
+    }
+   },
+   {
+    "minTimestamp": 1792237500000,
+    "minTimestampString": "2026-10-17 11:45:00.000 GMT+00:00",
+    "maxTimestamp": 1792237799999,
+    "maxTimestampString": "2026-10-17 11:49:59.999 GMT+00:00",
+    "value": {
+     "text": "2026-10-17T11:45:59.685Z localhost.localdomain envoy[1049382]: \"2026-10-17T11:45:59.481Z info envoy[1049605] [Originator@6876 sub=connection] [Tags: \"ConnectionId\":\"278691\"] remote address:10.0.0.16:62704,TLS_error:|268436502:SSL routines:OPENSSL_internal:SSLV3_ALERT_CERTIFICATE_UNKNOWN\"",
+     "timestamp": 1792237559690,
+     "timestampString": "2026-10-17 11:45:59.690 GMT+00:00",
+     "fields": [
+      {
+       "name": "procid",
+       "startPosition": 53,
+       "length": 7
+      },
+      {
+       "name": "priority",
+       "content": "info"
+      },
+      {
+       "name": "vmw_vcenter_id",
+       "content": "00000000-0000-4000-8000-b63d0b21ed46"
+      },
+      {
+       "name": "vmw_vcenter",
+       "content": "10.0.0.116"
+      },
+      {
+       "name": "vmw_vr_ops_id",
+       "content": "00000000-0000-4000-8000-d79492e501ee"
+      },
+      {
+       "name": "hostname",
+       "startPosition": 25,
+       "length": 21
+      },
+      {
+       "name": "vmw_datacenter",
+       "content": "home"
+      },
+      {
+       "name": "event_type",
+       "content": "v4_b96478f3"
+      },
+      {
+       "name": "vmw_object_id",
+       "content": "host-10"
+      },
+      {
+       "name": "appname",
+       "startPosition": 47,
+       "length": 5
+      },
+      {
+       "name": "source",
+       "content": "10.0.0.118"
+      },
+      {
+       "name": "facility",
+       "content": "local4"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "aggregate_ucount_hostname": {
+  "complete": true,
+  "duration": 35,
+  "numResults": 3,
+  "bins": [
+   {
+    "minTimestamp": 1792237800000,
+    "minTimestampString": "2026-10-17 11:50:00.000 GMT+00:00",
+    "maxTimestamp": 1792238099999,
+    "maxTimestampString": "2026-10-17 11:54:59.999 GMT+00:00",
+    "value": 5
+   },
+   {
+    "minTimestamp": 1792237500000,
+    "minTimestampString": "2026-10-17 11:45:00.000 GMT+00:00",
+    "maxTimestamp": 1792237799999,
+    "maxTimestampString": "2026-10-17 11:49:59.999 GMT+00:00",
+    "value": 5
+   },
+   {
+    "minTimestamp": 1792237200000,
+    "minTimestampString": "2026-10-17 11:40:00.000 GMT+00:00",
+    "maxTimestamp": 1792237499999,
+    "maxTimestampString": "2026-10-17 11:44:59.999 GMT+00:00",
+    "value": 2
+   }
+  ]
+ },
+ "aggregate_avg_unknown_field": {
+  "complete": true,
+  "duration": 59,
+  "numResults": 0,
+  "bins": []
+ }
+}

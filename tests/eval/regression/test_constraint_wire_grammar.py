@@ -52,13 +52,13 @@ def test_absolute_window_and_filters_keep_field_value_pairs():
     seen: list[str] = []
     search_events(
         _capturing_client(seen),
-        begin_ms=1000,
-        end_ms=2000,
+        begin_ms=1700000001000,
+        end_ms=1700000002000,
         filters=[("hostname", "=", "esx/01"), ("vmw_cluster", "EXISTS", "")],
     )
     path = seen[0].split("?")[0]
     assert path == (
-        "/api/v2/events/timestamp/%3E%201000/timestamp/%3C%202000"
+        "/api/v2/events/timestamp/%3E%201700000001000/timestamp/%3C%201700000002000"
         "/hostname/%3D%20esx%2F01/vmw_cluster/EXISTS"
     )
 

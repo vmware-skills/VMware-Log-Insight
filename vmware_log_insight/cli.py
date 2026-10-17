@@ -15,6 +15,7 @@ from typing import Optional, Annotated
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from vmware_log_insight import __version__
@@ -127,9 +128,9 @@ def doctor(
 @_friendly_errors
 @audited("search_logs")
 def search(
-    text: Annotated[str | None, typer.Option("--text", "-q", help="Free-text search (CONTAINS)")] = None,
+    text: Annotated[str | None, typer.Option("--text", "-q", help="Word(s) to match (CONTAINS; whole tokens, not substrings)")] = None,
     last: Annotated[str, typer.Option("--last", "-l", help="Relative window: 1h, 30m, 7d")] = "1h",
-    limit: Annotated[int, typer.Option("--limit", "-n", help="Max events (default 50)")] = 50,
+    limit: Annotated[int, typer.Option("--limit", "-n", help="Max events, 1..200 (default 50)")] = 50,
     as_json: Annotated[bool, typer.Option("--json", help="Raw JSON output")] = False,
     target: TargetOption = None,
     config: ConfigOption = None,
@@ -146,8 +147,10 @@ def search(
     table.add_column("Timestamp (ms)")
     table.add_column("Text", style="bold", overflow="fold")
     for e in result["events"]:
-        table.add_row(str(e["timestamp_ms"]), e["text"][:160])
+        table.add_row(str(e["timestamp_ms"]), escape(e["text"][:160]))
     console.print(table)
+    if result.get("note"):
+        console.print(f"[yellow]{escape(result['note'])}[/yellow]")
 
 
 @app.command()
@@ -156,7 +159,8 @@ def search(
 def aggregate(
     text: Annotated[str | None, typer.Option("--text", "-q", help="Free-text search")] = None,
     last: Annotated[str, typer.Option("--last", "-l", help="Relative window: 1h, 30m, 7d")] = "1h",
-    aggregation: Annotated[str, typer.Option("--agg", help="COUNT|UCOUNT|AVG|MIN|MAX|SUM|...")] = "COUNT",
+    aggregation: Annotated[str, typer.Option("--agg", help="COUNT|SAMPLE (no field) or UCOUNT|AVG|MIN|MAX|SUM|STDDEV|VARIANCE (need --field)")] = "COUNT",
+    field: Annotated[str | None, typer.Option("--field", "-f", help="Field the function applies to (see `fields`)")] = None,
     bin_width_ms: Annotated[int, typer.Option("--bin-ms", help="Bin width in ms")] = 60000,
     target: TargetOption = None,
     config: ConfigOption = None,
@@ -166,7 +170,8 @@ def aggregate(
 
     client, _ = _get_connection(target, config)
     result = aggregate_events(
-        client, text=text, last=last, aggregation=aggregation, bin_width_ms=bin_width_ms
+        client, text=text, last=last, aggregation=aggregation, field=field,
+        bin_width_ms=bin_width_ms,
     )
     _json(result)
 
@@ -186,8 +191,9 @@ def fields(
     items = list_fields(client, name_filter=name)["items"]
     table = Table(title=f"Fields ({len(items)})")
     table.add_column("Name", style="bold")
+    table.add_column("Type")
     for f in items:
-        table.add_row(f["name"])
+        table.add_row(escape(f["name"]), f["type"])
     console.print(table)
 
 
@@ -214,7 +220,7 @@ def alert_list_cmd(
     table.add_column("Name", style="bold")
     table.add_column("Enabled")
     for a in items:
-        table.add_row(a["id"][:36], a["name"][:60], str(a["enabled"]))
+        table.add_row(a["id"][:36], escape(a["name"][:60]), str(a["enabled"]))
     console.print(table)
 
 

@@ -19,6 +19,7 @@ reporter's working curl used ``timestamp/LAST%20360000``.
 
 from __future__ import annotations
 
+import time
 from urllib.parse import quote
 
 # Operators accepted in field constraints (mirrors tests/eval/spec/api_index.py).
@@ -26,6 +27,30 @@ VALID_OPERATORS = frozenset({"CONTAINS", "=", "!=", "<", ">", "EXISTS", "LAST"})
 
 # Duration suffix -> seconds, for human windows like "30m", "24h", "7d".
 _DURATION_UNITS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+
+# 8.18.7 parses the LAST value as a 32-bit int of milliseconds: past 2**31-1 ms
+# (~24.85 days) it answers HTTP 400 (verified 2026-10-17: 24d works, 25d fails).
+# A longer window is sent as "timestamp > now - window" instead.
+_LAST_MAX_MS = 2**31 - 1
+
+# Any epoch-ms value below this is 1973 or earlier — far more likely to be
+# epoch SECONDS passed by mistake (1e11 s is the year 5138).
+_MIN_PLAUSIBLE_EPOCH_MS = 100_000_000_000
+
+
+def _check_epoch_ms(name: str, value: int) -> int:
+    """Refuse a window bound that cannot be epoch milliseconds."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(
+            f"{name} must be an integer of epoch milliseconds (got {value!r})."
+        )
+    if value < _MIN_PLAUSIBLE_EPOCH_MS:
+        raise ValueError(
+            f"{name}={value} is not epoch milliseconds — it looks like seconds "
+            f"(as milliseconds it is before 1973). Multiply by 1000: "
+            f"{name}={value * 1000}."
+        )
+    return value
 
 
 def parse_duration_ms(value: str | int) -> int:
@@ -119,16 +144,21 @@ def build_constraints(
     begin_ms: int | None = None,
     end_ms: int | None = None,
     filters: list[tuple[str, str, str]] | None = None,
+    now_ms: int | None = None,
 ) -> str:
     """Build the constraints path segment for an events/aggregated-events query.
 
     Args:
         text: Free-text search; becomes ``text/CONTAINS%20<text>``.
         last: Relative time window (e.g. "1h", "30m", int seconds); becomes
-            ``timestamp/LAST%20<ms>``. Mutually exclusive with begin_ms/end_ms.
+            ``timestamp/LAST%20<ms>``, or ``timestamp/%3E%20<now - ms>`` when
+            the window is too long for LAST (~24.85 days). Mutually exclusive
+            with begin_ms/end_ms.
         begin_ms / end_ms: Absolute epoch-ms window; become
-            ``timestamp/%3E%20<begin>`` and ``timestamp/%3C%20<end>``.
+            ``timestamp/%3E%20<begin>`` and ``timestamp/%3C%20<end>``. A value
+            that looks like epoch seconds, or begin after end, is refused.
         filters: Extra ``(field, operator, value)`` constraints.
+        now_ms: "Now" for the long-window rewrite; defaults to the clock.
 
     Returns:
         The ``/``-joined constraints string. Defaults to the last hour when no
@@ -145,12 +175,27 @@ def build_constraints(
         )
 
     if last is not None:
-        segments.append(_segment("timestamp", "LAST", str(parse_duration_ms(last))))
+        window_ms = parse_duration_ms(last)
+        if window_ms <= _LAST_MAX_MS:
+            segments.append(_segment("timestamp", "LAST", str(window_ms)))
+        else:
+            now = int(time.time() * 1000) if now_ms is None else now_ms
+            segments.append(_segment("timestamp", ">", str(now - window_ms)))
     elif begin_ms is not None or end_ms is not None:
         if begin_ms is not None:
-            segments.append(_segment("timestamp", ">", str(int(begin_ms))))
+            _check_epoch_ms("begin_ms", begin_ms)
         if end_ms is not None:
-            segments.append(_segment("timestamp", "<", str(int(end_ms))))
+            _check_epoch_ms("end_ms", end_ms)
+        if begin_ms is not None and end_ms is not None and begin_ms >= end_ms:
+            raise ValueError(
+                f"begin_ms ({begin_ms}) must be before end_ms ({end_ms}) — the "
+                "window is empty, so the appliance would answer with no events. "
+                "Swap them, or pass only one bound."
+            )
+        if begin_ms is not None:
+            segments.append(_segment("timestamp", ">", str(begin_ms)))
+        if end_ms is not None:
+            segments.append(_segment("timestamp", "<", str(end_ms)))
     else:
         # Never issue an unbounded query — default to the last hour.
         segments.append(_segment("timestamp", "LAST", str(parse_duration_ms("1h"))))

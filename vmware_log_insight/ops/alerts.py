@@ -6,14 +6,66 @@ sanitized.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
+from urllib.parse import quote
 
 from vmware_policy import paginated, sanitize
+
+from vmware_log_insight.connection import LogInsightApiError
+from vmware_log_insight.ops._shape import expect_list, expect_object
 
 if TYPE_CHECKING:
     from vmware_log_insight.connection import LogInsightClient
 
 _DEFAULT_LIMIT = 50
+
+# 8.18.7 alert ids are UUIDs. Allow a little more than that (content packs and
+# older releases may differ) but nothing that can leave /alerts/<id>: no '/',
+# no '?', no whitespace, and not '.' or '..' (which a URL normaliser resolves).
+_ALERT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
+
+
+def _alert_segment(alert_id: str) -> str:
+    """The URL path segment for a well-formed alert id; refuse anything else.
+
+    Up to 2.4.0 the id was interpolated raw, so ``alert_id="../version"`` reached
+    ``GET /api/v2/version``. Read-only, but a tool must only call what it names.
+    The caller keeps the f-string path at the call site so the spec-conformance
+    scan still sees which endpoint it is.
+    """
+    if not alert_id:
+        raise ValueError(
+            "alert_id must not be empty: expected an alert id. Run list_log_alerts "
+            "(or `vmware-log-insight alert list`) and copy an exact value from "
+            "a row's 'id' field."
+        )
+    if not _ALERT_ID.fullmatch(alert_id):
+        raise ValueError(
+            f"alert_id {sanitize(alert_id, 80)!r} is not an alert id (ids are "
+            "UUIDs such as 1205ef1d-2b11-37ea-9acc-b0a745e61112). Run "
+            "list_log_alerts and copy an exact value from a row's 'id' field."
+        )
+    return quote(alert_id, safe="")
+
+
+def _raise_if_unknown_id(exc: LogInsightApiError, path: str) -> None:
+    """Re-raise an unknown-id answer with advice that can work.
+
+    8.18.7 answers HTTP 404 for an unknown UUID and HTTP 500 for an id that is
+    not a UUID (both verified 2026-10-17); the connection layer's generic 5xx
+    hint says "retry shortly" — advice that can never work for a wrong id.
+    """
+    if exc.status_code in (404, 500):
+        raise LogInsightApiError(
+            f"Log Insight returned HTTP {exc.status_code} for GET {path}. "
+            "On 8.18.7 that is what an alert id the appliance does not know "
+            "returns. Run list_log_alerts and copy an exact id; if that id "
+            "also fails, check the appliance's health.",
+            status_code=exc.status_code,
+            method="GET",
+            path=path,
+        ) from exc
 
 
 def _summarize_alert(a: dict) -> dict:
@@ -45,11 +97,12 @@ def list_alerts(
         one GET and the filter runs here, so counting the matches costs nothing
         beyond the request already made.
     """
-    data = client.get("/alerts")
-    items = data.get("alerts", []) or []
+    items = expect_list(client.get("/alerts"), "GET /alerts")
     filt = name_filter.lower() if name_filter else None
     matched: list[dict] = []
     for a in items:
+        if not isinstance(a, dict):
+            continue
         summary = _summarize_alert(a)
         if filt and filt not in summary["name"].lower():
             continue
@@ -67,13 +120,13 @@ def get_alert(client: LogInsightClient, alert_id: str) -> dict:
     Returns:
         The alert's full (sanitized) detail dict.
     """
-    if not alert_id:
-        raise ValueError(
-            "alert_id must not be empty: expected an alert id. Run list_log_alerts "
-            "(or `vmware-log-insight alert list`) and copy an exact value from "
-            "a row's 'id' field."
-        )
-    data = client.get(f"/alerts/{alert_id}")
+    seg = _alert_segment(alert_id)
+    try:
+        data = client.get(f"/alerts/{seg}")
+    except LogInsightApiError as exc:
+        _raise_if_unknown_id(exc, f"/alerts/{seg}")
+        raise
+    data = expect_object(data, "GET /alerts/{id}")
     summary = _summarize_alert(data)
     summary["raw_keys"] = sorted(k for k in data if isinstance(k, str))
     return summary
@@ -96,15 +149,17 @@ def get_alert_history(
         record count at no extra cost — a page that exactly fills `limit` is
         still reported complete when it genuinely is.
     """
-    if not alert_id:
-        raise ValueError(
-            "alert_id must not be empty: expected an alert id. Run list_log_alerts "
-            "(or `vmware-log-insight alert list`) and copy an exact value from "
-            "a row's 'id' field, then pass it to get_log_alert_history."
-        )
-    data = client.get(f"/alerts/{alert_id}/history")
-    records = data.get("history", data.get("records", [])) or []
+    seg = _alert_segment(alert_id)
+    try:
+        records = client.get(f"/alerts/{seg}/history")
+    except LogInsightApiError as exc:
+        _raise_if_unknown_id(exc, f"/alerts/{seg}/history")
+        raise
+    records = expect_list(records, "GET /alerts/{id}/history")
+    records = [r for r in records if isinstance(r, dict)]
     out: list[dict] = []
+    # The record shape is unverified: every alert on the 8.18.7 lab appliance
+    # had an empty history, so these keys are still the documented guesses.
     for r in records[:limit]:
         out.append(
             {

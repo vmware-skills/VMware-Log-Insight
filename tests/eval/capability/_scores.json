@@ -56,42 +56,59 @@
     "error_actionability": {
       "detail": {
         "composed_hint_sites": [
-          "connection.py:211",
-          "connection.py:311",
-          "connection.py:290"
+          "connection.py:212",
+          "connection.py:312",
+          "connection.py:291"
         ],
-        "dead_end_count": 0,
-        "dead_end_errors": [],
+        "dead_end_count": 2,
+        "dead_end_errors": [
+          {
+            "message": "Target '{}' not found.",
+            "missing": [
+              "names_artifact",
+              "states_remedy"
+            ],
+            "where": "connection.py:426"
+          },
+          {
+            "message": "{}={} is not epoch milliseconds \u2014 it looks like seconds (as milliseconds it is before 1973). Multipl",
+            "missing": [
+              "names_artifact",
+              "states_remedy"
+            ],
+            "where": "constraints.py:48"
+          }
+        ],
         "per_dimension_pct": {
-          "names_artifact": 100.0,
-          "names_input": 95.7,
-          "states_remedy": 100.0
+          "names_artifact": 86.7,
+          "names_input": 96.7,
+          "states_remedy": 93.3
         },
-        "raise_sites": 23
+        "raise_sites": 30
       },
-      "maximum": 69,
-      "pct": 98.6,
+      "maximum": 90,
+      "pct": 92.2,
       "unit": "points",
-      "value": 68
+      "value": 83
     },
     "manifest_context_headroom": {
       "detail": {
         "heaviest_tools": {
-          "aggregate_logs": 594,
-          "get_log_alert_history": 287,
+          "aggregate_logs": 815,
+          "get_log_alert_history": 322,
           "list_log_alerts": 292,
-          "list_log_fields": 232,
-          "search_logs": 560
+          "list_log_fields": 286,
+          "search_logs": 653
         },
-        "manifest_tokens": 2337,
-        "mean_tokens_per_tool": 333.9,
+        "manifest_tokens": 2773,
+        "mean_tokens_per_tool": 396.1,
         "reference_context": 16384,
         "tool_count": 7
       },
       "maximum": 16384,
-      "pct": 85.7,
+      "pct": 83.1,
       "unit": "tokens",
-      "value": 14047
+      "value": 13611
     },
     "parameter_documentation_coverage": {
       "detail": {
@@ -104,17 +121,17 @@
           ]
         }
       },
-      "maximum": 24,
+      "maximum": 25,
       "pct": 100.0,
       "unit": "parameters",
-      "value": 24
+      "value": 25
     },
     "per_tool_token_discipline": {
       "detail": {
         "ceiling": 350,
         "over_ceiling": {
-          "aggregate_logs": 594,
-          "search_logs": 560
+          "aggregate_logs": 815,
+          "search_logs": 653
         }
       },
       "maximum": 7,
@@ -152,27 +169,27 @@
         "remedy_after_interpolation": [
           "config.py:265",
           "config.py:234",
-          "constraints.py:40",
-          "constraints.py:81",
-          "constraints.py:97",
-          "constraints.py:47",
           "constraints.py:65",
-          "constraints.py:75",
-          "aggregate.py:91",
-          "aggregate.py:98"
+          "constraints.py:106",
+          "constraints.py:122",
+          "constraints.py:72",
+          "constraints.py:90",
+          "constraints.py:100",
+          "constraints.py:190",
+          "aggregate.py:115"
         ]
       },
-      "maximum": 23,
+      "maximum": 28,
       "pct": 100.0,
       "unit": "messages",
-      "value": 23
+      "value": 28
     },
     "teaching_error_rate": {
       "detail": {},
-      "maximum": 23,
-      "pct": 100.0,
+      "maximum": 30,
+      "pct": 86.7,
       "unit": "messages",
-      "value": 23
+      "value": 26
     },
     "tool_description_quality": {
       "detail": {

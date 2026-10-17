@@ -27,7 +27,7 @@ ENVELOPE_KEYS = {"items", "returned", "limit", "total", "truncated", "hint"}
 class FakeClient:
     """Returns a canned payload for any GET."""
 
-    def __init__(self, payload: dict):
+    def __init__(self, payload):
         self.payload = payload
 
     def get(self, path, params=None, **kwargs):
@@ -36,23 +36,19 @@ class FakeClient:
 
 def _alerts(count: int) -> FakeClient:
     return FakeClient(
-        {
-            "alerts": [
-                {"id": f"a{i}", "name": f"alert-{i:03d}", "enabled": True, "info": ""}
-                for i in range(count)
-            ]
-        }
+        [
+            {"id": f"a{i}", "name": f"alert-{i:03d}", "enabled": True, "info": ""}
+            for i in range(count)
+        ]
     )
 
 
 def _history(count: int) -> FakeClient:
-    return FakeClient(
-        {"history": [{"timestamp": i, "info": f"fired-{i}"} for i in range(count)]}
-    )
+    return FakeClient([{"timestamp": i, "info": f"fired-{i}"} for i in range(count)])
 
 
 def _fields(count: int) -> FakeClient:
-    return FakeClient({"fields": [{"name": f"field_{i:03d}"} for i in range(count)]})
+    return FakeClient([{"displayName": f"field_{i:03d}"} for i in range(count)])
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +111,7 @@ def test_alert_history_truncation_counts_all_records_not_the_page():
 
 def test_empty_result_is_complete_not_truncated():
     """Zero rows is a complete answer, not a maybe — the #31 failure mode."""
-    out = list_alerts(FakeClient({"alerts": []}))
+    out = list_alerts(FakeClient([]))
     assert out["items"] == []
     assert out["total"] == 0
     assert out["truncated"] is False
@@ -129,13 +125,11 @@ def test_empty_result_is_complete_not_truncated():
 
 def test_total_counts_matches_not_the_whole_collection():
     client = FakeClient(
-        {
-            "alerts": [
-                {"id": "a1", "name": "disk full", "enabled": True},
-                {"id": "a2", "name": "cpu hot", "enabled": True},
-                {"id": "a3", "name": "disk slow", "enabled": True},
-            ]
-        }
+        [
+            {"id": "a1", "name": "disk full", "enabled": True},
+            {"id": "a2", "name": "cpu hot", "enabled": True},
+            {"id": "a3", "name": "disk slow", "enabled": True},
+        ]
     )
     out = list_alerts(client, name_filter="disk")
     assert out["returned"] == 2

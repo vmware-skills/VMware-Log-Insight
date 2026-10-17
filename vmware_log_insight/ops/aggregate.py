@@ -11,6 +11,8 @@ import logging
 from typing import TYPE_CHECKING
 
 from vmware_log_insight.constraints import build_constraints
+from vmware_log_insight.ops._shape import expect_object
+from vmware_log_insight.ops.search import summarize_event
 
 if TYPE_CHECKING:
     from vmware_log_insight.connection import LogInsightClient
@@ -22,18 +24,33 @@ VALID_AGGREGATIONS = frozenset(
     {"COUNT", "UCOUNT", "AVG", "MIN", "MAX", "SUM", "STDDEV", "VARIANCE", "SAMPLE"}
 )
 
+# Verified on 8.18.7 (2026-10-17): these two answer HTTP 400 when given an
+# aggregation-field; the other seven answer HTTP 400 without one.
+_NO_FIELD = frozenset({"COUNT", "SAMPLE"})
+FIELD_AGGREGATIONS = VALID_AGGREGATIONS - _NO_FIELD
+
 
 def _normalize_bins(data: dict) -> list[dict]:
-    """Pull (timestamp_ms, value) bins out of the aggregated-events response.
+    """Pull bins out of the aggregated-events response, oldest first.
 
-    Defensive across wire variants: bins may live under ``bins`` and carry the
-    count as ``value`` or ``count``; the timestamp as ``timestamp`` or ``time``.
+    8.18.7 sends ``bins: [{minTimestamp, minTimestampString, maxTimestamp,
+    maxTimestampString, value}]``, newest first. ``value`` is a number, except for
+    SAMPLE where it is one whole event — summarized and sanitized like a
+    search_logs event, because it is raw log text.
     """
     out: list[dict] = []
-    for b in data.get("bins", data.get("aggregatedEvents", [])) or []:
-        ts = b.get("timestamp", b.get("time"))
-        value = b.get("value", b.get("count", 0))
-        out.append({"timestamp_ms": ts, "value": value})
+    for b in data.get("bins") or []:
+        if not isinstance(b, dict):
+            continue
+        value = b.get("value")
+        if isinstance(value, dict):
+            value = summarize_event(value)
+        elif not isinstance(value, (int, float)) or isinstance(value, bool):
+            value = None
+        out.append(
+            {"timestamp_ms": b.get("minTimestamp"), "end_ms": b.get("maxTimestamp"), "value": value}
+        )
+    out.sort(key=lambda b: b["timestamp_ms"] if isinstance(b["timestamp_ms"], int) else 0)
     return out
 
 
@@ -70,6 +87,7 @@ def aggregate_events(
     end_ms: int | None = None,
     filters: list[tuple[str, str, str]] | None = None,
     aggregation: str = "COUNT",
+    field: str | None = None,
     bin_width_ms: int = 60000,
 ) -> dict:
     """Aggregate matching events into a time series and detect spikes.
@@ -79,12 +97,18 @@ def aggregate_events(
         text / last / begin_ms / end_ms / filters: Same query semantics as
             search_events (default last hour if no window is given).
         aggregation: One of COUNT, UCOUNT, AVG, MIN, MAX, SUM, STDDEV, VARIANCE,
-            SAMPLE. Default COUNT.
+            SAMPLE. Default COUNT. COUNT and SAMPLE take no field; the other
+            seven need one.
+        field: The field the function is applied to (a name from list_fields),
+            e.g. UCOUNT of ``hostname``. Required for every function except
+            COUNT and SAMPLE, refused for those two.
         bin_width_ms: Width of each time bin in milliseconds. Default 60000 (1m).
 
     Returns:
-        {"aggregation", "bin_width_ms", "constraints", "bins":[{timestamp_ms,
-        value}], "spikes":[{timestamp_ms, value, zscore}]}.
+        {"aggregation", "field", "bin_width_ms", "constraints", "bins":
+        [{timestamp_ms, end_ms, value}] oldest first, "spikes":[{timestamp_ms,
+        end_ms, value, zscore}]}, plus "note" when the series is empty for a
+        reason worth saying.
     """
     aggregation = aggregation.upper()
     if aggregation not in VALID_AGGREGATIONS:
@@ -93,6 +117,18 @@ def aggregate_events(
             f"{sorted(VALID_AGGREGATIONS)}. Re-run aggregate_logs with one of "
             "those exact strings; COUNT is the default and answers "
             "'how many events per bin'."
+        )
+    if aggregation in _NO_FIELD and field:
+        raise ValueError(
+            f"{aggregation} takes no field (the appliance answers HTTP 400). "
+            f"Re-run aggregate_logs without field, or use UCOUNT with "
+            f"field={field!r} to count distinct values of it."
+        )
+    if aggregation in FIELD_AGGREGATIONS and not field:
+        raise ValueError(
+            f"{aggregation} needs a field to apply to (the appliance answers HTTP "
+            "400 without one). Pass field=<name> — e.g. UCOUNT with "
+            "field='hostname' — and pick names from list_log_fields."
         )
     if bin_width_ms <= 0:
         raise ValueError(
@@ -104,15 +140,27 @@ def aggregate_events(
     constraints = build_constraints(
         text=text, last=last, begin_ms=begin_ms, end_ms=end_ms, filters=filters
     )
-    data = client.get(
-        f"/aggregated-events/{constraints}",
-        params={"aggregation-function": aggregation, "bin-width": bin_width_ms},
+    params: dict = {"aggregation-function": aggregation, "bin-width": bin_width_ms}
+    if field:
+        params["aggregation-field"] = field
+    data = expect_object(
+        client.get(f"/aggregated-events/{constraints}", params=params),
+        "GET /aggregated-events",
     )
     bins = _normalize_bins(data)
-    return {
+    result = {
         "aggregation": aggregation,
+        "field": field,
         "bin_width_ms": bin_width_ms,
         "constraints": constraints,
         "bins": bins,
         "spikes": detect_spikes(bins),
     }
+    if not bins and field:
+        # 8.18.7 answers an unknown field with an empty series, not an error,
+        # so "no bins" cannot be read as "no events".
+        result["note"] = (
+            f"No bins. Either nothing matched in the window, or {field!r} is not "
+            "a field this appliance has — check the name with list_log_fields."
+        )
+    return result

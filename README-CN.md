@@ -40,14 +40,26 @@ vmware-log-insight doctor
 
 ## MCP 工具（7 个，全只读）
 
-`search_logs`（按时间窗 + 文本 + 字段过滤检索）、`aggregate_logs`（按时间桶聚合 + z-score
-突刺检测）、`list_log_fields`、`get_log_insight_version`、`list_log_alerts` / `get_log_alert` / `get_log_alert_history`。
+| 工具 | 作用 |
+|---|---|
+| `search_logs` | 按时间窗 + 文本检索事件（按整词匹配），最多 200 条 |
+| `aggregate_logs` | 按时间桶计数/聚合（对某个 `field` 做 UCOUNT/AVG/...），附 z-score 突刺检测 |
+| `list_log_fields` | 列出设备上的字段（名称 + 类型），供 `aggregate_logs` 的 `field` 使用 |
+| `get_log_insight_version` | 设备版本/构建号 |
+| `list_log_alerts` / `get_log_alert` / `get_log_alert_history` | 查询已定义的告警及其触发历史 |
 
 ## 常用工作流
 
 - **快速找错**：`vmware-log-insight search -q error -l 1h`
 - **日志何时突增**：`vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`，看 `spikes[]`，再 `search` 突刺时间窗
 - **根因定位**：把 `search_logs` 结果（连同 vmware-monitor 的 vCenter 事件、vmware-aria 的指标）交给 **vmware-debug** 的 `build_incident_timeline`
+
+## 排障
+
+- `/sessions 返回 401` → 检查 username/password/`provider` 以及 `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` 环境变量。
+- `处处 503` → 设备正在启动；`doctor` 把它报告为状态，而不是崩溃。
+- 结果为空 → 放宽 `--last`；`text` 按整词匹配，不是子串；默认 API 端口是 **9543**（不同请设置 `port`）。
+- `UCOUNT needs a field` → 传 `--field`（名称来自 `fields`）；COUNT 和 SAMPLE 不带字段。
 
 ## 安全
 

@@ -125,7 +125,7 @@ checklist when evaluating any local model against these skills:
 | Acts on instruction-shaped text found inside a log line | The "untrusted content" block. `sanitize()` removes control characters but cannot remove meaning — the prompt rule is doing real work here. |
 | Reports an empty result as proof the event never occurred | The "empty result" rule. Widen the window, and check the appliance actually ingests from that source. |
 | Asserts causation from adjacent timestamps | Route correlation to vmware-debug, which ranks hypotheses rather than concluding. |
-| Hand-crafts a field constraint and gets HTTP 400 | Let the tool build constraints from `text` and the filter arguments. |
+| Hand-crafts a field constraint and gets HTTP 400 | Let the tool build constraints from `text` and the window arguments; there is no field-filter argument. |
 
 ## Reporting results
 
