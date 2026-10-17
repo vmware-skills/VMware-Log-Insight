@@ -25,6 +25,10 @@ never sends. The regression tests now replay responses captured from that applia
 * Errors say "run doctor" only when doctor can help (config, credentials, reachability). An unexpected error says it
   is not an input problem.
 * `doctor` now reads `GET /fields` through the same code the tools use, so a broken query API no longer passes.
+* **Roles: a target-limited role can use this skill.** The role resolver read a `name` field that this skill's
+  target config does not have, so it raised on every call. Every call by a token whose role lists targets was
+  refused as "cannot be resolved", and the audit row could not name the default target.
+* A refused argument now logs one warning line; real failures keep their traceback.
 * Docs: `search_logs` has no field-filter parameter (the docs said it had); `text` matches whole tokens, not
   substrings; corrected token estimates.
 
