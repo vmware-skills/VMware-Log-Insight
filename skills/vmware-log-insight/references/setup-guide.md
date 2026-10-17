@@ -3,7 +3,7 @@
 ## Install
 
 ```bash
-uv tool install vmware-log-insight==2.4.0
+uv tool install vmware-log-insight==2.4.1
 mkdir -p ~/.vmware-log-insight
 cp config.example.yaml ~/.vmware-log-insight/config.yaml
 ```
@@ -84,7 +84,7 @@ reachability (TCP 9543), authentication, appliance version, MCP server import.
 ```json
 {
   "command": "uvx",
-  "args": ["--from", "vmware-log-insight==2.4.0", "vmware-log-insight-mcp"],
+  "args": ["--from", "vmware-log-insight==2.4.1", "vmware-log-insight-mcp"],
   "env": { "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml" }
 }
 ```
