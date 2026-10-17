@@ -67,7 +67,14 @@ def _safe_error(exc: Exception, tool: str) -> str:
     so allowing it through would pass any library's raw text as if this package
     had authored it.
     """
-    logger.error("Tool %s failed", tool, exc_info=True)
+    if isinstance(exc, (ValueError, KeyError, ConfigError)) and not isinstance(exc, ssl.SSLError):
+        # A refused argument or a missing setting: the caller gets the fix in
+        # the message, and a full traceback per bad argument buried real
+        # failures in the server log. One line; the traceback stays at DEBUG.
+        logger.warning("Tool %s refused: %s", tool, sanitize(str(exc), 300))
+        logger.debug("Tool %s refused", tool, exc_info=exc)
+    else:
+        logger.error("Tool %s failed", tool, exc_info=exc)
     if isinstance(exc, ssl.SSLError):
         return f"{type(exc).__name__}: operation failed."
     if isinstance(

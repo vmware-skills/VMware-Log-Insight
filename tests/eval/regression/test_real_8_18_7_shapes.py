@@ -309,3 +309,35 @@ def test_unexpected_errors_stay_masked():
 
     out = server._error_result(AttributeError("'list' object has no attribute 'get'"), "list_log_fields")
     assert out["error"] == "AttributeError: operation failed."
+
+
+# --- server log: a refused argument is one line, a failure keeps its traceback ---
+
+
+def test_input_error_logs_one_line_without_traceback(caplog):
+    import logging
+
+    from vmware_log_insight.mcp_server import server
+
+    with caplog.at_level(logging.DEBUG, logger="mcp_server"):
+        server._error_result(ValueError("UCOUNT needs a field"), "aggregate_logs")
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1 and warnings[0].exc_info is None
+    assert "UCOUNT needs a field" in warnings[0].getMessage()
+    assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
+
+
+def test_real_failure_keeps_its_traceback(caplog):
+    import logging
+
+    from vmware_log_insight.mcp_server import server
+
+    with caplog.at_level(logging.DEBUG, logger="mcp_server"):
+        server._error_result(AttributeError("boom"), "list_log_fields")
+        server._error_result(
+            LogInsightApiError("could not connect", status_code=None), "search_logs"
+        )
+    errors = [r for r in caplog.records if r.levelno == logging.ERROR]
+    assert len(errors) == 2
+    # the real exception, not an empty sys.exc_info() tuple
+    assert all(r.exc_info and r.exc_info[1] is not None for r in errors)
