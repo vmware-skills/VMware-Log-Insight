@@ -24,6 +24,8 @@ metadata: {"openclaw":{"requires":{"anyBins":["vmware-log-insight","uvx"]},"opti
 
 # VMware Log Insight
 
+> Self-test: [guide](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md).
+
 > **Disclaimer**: Community-maintained open-source project, **not affiliated with,
 > endorsed by, or sponsored by VMware, Inc. or Broadcom Inc.** "VMware", "vSphere",
 > and "Aria" are trademarks of Broadcom. Source is publicly auditable under the MIT license.
