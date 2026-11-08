@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vmware-log-insight"
-version = "2.4.1"
+version = "2.4.2"
 description = "VMware Aria Operations for Logs (vRealize Log Insight) read-only log search, aggregation, and alert queries — MCP + CLI"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "Wei Zhou", email = "wei-wz.zhou@broadcom.com" }]
+authors = [{ name = "Wei Zhou", email = "zhouwei008@gmail.com" }]
 keywords = ["vmware", "aria", "log-insight", "vrealize", "logs", "siem", "mcp", "ai-ops"]
 classifiers = [
     "Development Status :: 4 - Beta",
