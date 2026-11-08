@@ -1,3 +1,7 @@
+## Unreleased — system proxy bypass
+
+* The Log Insight REST client now honors system proxy bypass rules for the configured origin while preserving TLS verification and CA environment settings.
+
 ## v2.4.1 — fixed against a real 8.18.7 appliance (VMware-AIops#45)
 
 First run of every tool on real hardware (Aria Operations for Logs 8.18.7-25423541, ingesting ESXi and vCenter

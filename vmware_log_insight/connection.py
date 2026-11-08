@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 import time
+import urllib.request
 from typing import Any
 
 import httpx
@@ -145,8 +146,15 @@ class LogInsightClient:
         self._liveness_checked_at: float = 0.0
 
 
+        # Honor the system bypass list for this origin while retaining CA env settings.
+        mounts = None
+        if urllib.request.proxy_bypass(target.host):
+            origin = f"https://{target.host}:{target.port}"
+            mounts = {origin: httpx.HTTPTransport(verify=target.verify_ssl, trust_env=True)}
+
         self._client = httpx.Client(
             base_url=self._base_url,
+            mounts=mounts,
             verify=target.verify_ssl,
             timeout=30.0,
         )

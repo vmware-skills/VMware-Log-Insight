@@ -160,6 +160,12 @@ exists for the write-capable skills. Least privilege comes from the account the 
 
 Details: `skills/vmware-log-insight/references/setup-guide.md` ("Serving MCP over HTTPS", "Limiting which tools are offered").
 
+## System proxy bypass
+
+The Log Insight REST client honors the operating system proxy bypass list for the configured origin.
+TLS verification still follows `verify_ssl`, and CA environment settings such as `SSL_CERT_FILE` remain active.
+Other origins retain their normal proxy routing.
+
 ## License
 
 MIT.
