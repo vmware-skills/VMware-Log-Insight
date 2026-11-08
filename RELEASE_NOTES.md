@@ -1,5 +1,8 @@
-## Unreleased — system proxy bypass
+## v2.4.2 — target proxy bypass and dependency security (2026-11-08)
 
+* Update public author/project contact metadata to `zhouwei008@gmail.com`.
+
+### system proxy bypass
 * The Log Insight REST client now honors system proxy bypass rules for the configured origin while preserving TLS verification and CA environment settings.
 
 ## v2.4.1 — fixed against a real 8.18.7 appliance (VMware-AIops#45)
