@@ -1,0 +1,16 @@
+{
+  "name": "vmware-log-insight",
+  "version": "2.4.2",
+  "description": "VMware Aria Operations for Logs (vRealize Log Insight) read-only log search, aggregation, and alert queries — MCP + CLI",
+  "mcpServers": {
+    "vmware-log-insight": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "vmware-log-insight==2.4.2",
+        "vmware-log-insight-mcp"
+      ]
+    }
+  }
+}
