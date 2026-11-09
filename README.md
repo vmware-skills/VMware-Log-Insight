@@ -98,11 +98,7 @@ Copy this configuration into your MCP client's local stdio settings. The client 
   "mcpServers": {
     "vmware-log-insight": {
       "command": "uvx",
-      "args": [
-        "--from",
-        "vmware-log-insight==2.4.2",
-        "vmware-log-insight-mcp"
-      ],
+      "args": ["--from", "vmware-log-insight==2.4.2", "vmware-log-insight-mcp"],
       "env": {
         "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml"
       }
