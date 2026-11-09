@@ -1,8 +1,22 @@
 <!-- mcp-name: io.github.vmware-skills/vmware-log-insight -->
 
-# VMware Log Insight（中文）
+# VMware Log Insight
 
-要用自己的模型和 Agent 平台进行只读自测，请看 marketplace 根目录的[共享模型适配自测任务](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md)。
+[![PyPI](https://img.shields.io/pypi/v/vmware-log-insight)](https://pypi.org/project/vmware-log-insight/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#readme-license)
+
+[English](README.md) | 中文
+
+维护者: Wei Zhou · [zhouwei008@gmail.com](mailto:zhouwei008@gmail.com)
+
+社区维护的开源项目，非 VMware 或 Broadcom 官方产品。
+
+[概述](#readme-overview) · [快速开始](#readme-quick-start) · [MCP 配置](#readme-mcp-configuration) · [能力与工作流](#readme-capabilities-and-workflows) · [安全与审计](#readme-safety-and-audit) · [故障排查](#readme-troubleshooting) · [配套 Skills](#readme-companion-skills) · [参考资料](#readme-reference) · [许可证](#readme-license)
+
+<a id="readme-overview"></a>
+
+## 概述
+
+默认通过本地 Stdio 运行；请在本机配置所需目标和凭据。
 
 > **声明**：本项目为社区维护的开源项目，**与 VMware, Inc. 或 Broadcom Inc. 无任何隶属、
 > 背书或赞助关系。** "VMware"、"vSphere"、"Aria" 为 Broadcom 商标。源码以 MIT 许可证公开可审计。
@@ -11,25 +25,25 @@
 VM syslog 的日志平台）的**只读**日志检索与聚合。VMware skill 家族的集中日志数据源。
 **严格无破坏性**：只查询，从不写入。
 
-## 升级到 2.0
+完整的 Agent 指令见 [`skills/vmware-log-insight/SKILL.md`](skills/vmware-log-insight/SKILL.md).
 
-2.0 把全部 7 个 MCP 工具改成动词在前（例如 `alert_get` → `get_log_alert`, `alert_history` → `get_log_alert_history`, `alert_list` → `list_log_alerts`），完整的新旧名对照表见
-[RELEASE_NOTES.md](RELEASE_NOTES.md#v200--mcp-tools-renamed-verb-first)。其他都不变：工具、参数、安全确认门和 CLI 命令都一样。
-如果 agent 提示词、脚本或 `~/.vmware/rules.yaml` 里写了工具名，请改成新名——不过用旧名写的 deny 规则在
-vmware-policy ≥ 1.18 下仍然生效（`vmware-audit policy` 会列出因改名而多匹配的规则），vmware-pilot ≥ 1.13 也会自动转换已保存工作流里的旧名。
-如果还有 2.0 之前的安装共用这个 `rules.yaml`，请把它的 vmware-policy 也升到 ≥ 1.18.2：它会按新旧两个名字匹配每条规则，一份文件两边都管用。
+<a id="readme-quick-start"></a>
 
-## 配套 Skill
+## 快速开始
 
-| 需求 | Skill | 工具数 |
-|---|---|:-:|
-| 原始集中日志 + 突刺 | **vmware-log-insight**（本项目） | 7 |
-| vCenter 事件与告警 | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) | 27 |
-| 指标 / 异常 / 容量 | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) | 28 |
-| 故障关联 / 根因 | [vmware-debug](https://github.com/vmware-skills/VMware-Debug)（把 `search_logs` 结果喂给它） | 2 |
-| VM 生命周期 / 运维 | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) | 49 |
+需要 Python `>=3.10` 和 `uv`。
 
-## 安装
+```bash
+uv tool install vmware-log-insight==2.4.2
+vmware-log-insight --help
+```
+
+目标、凭据和本地数据目录设置见 [setup guide](skills/vmware-log-insight/references/setup-guide.md).
+
+<details>
+<summary>安装与配置详情（含离线安装）</summary>
+
+### 安装
 
 ```bash
 uv tool install vmware-log-insight
@@ -40,7 +54,34 @@ chmod 600 ~/.vmware-log-insight/.env
 vmware-log-insight doctor
 ```
 
-## MCP 工具（7 个，全只读）
+
+</details>
+
+<a id="readme-mcp-configuration"></a>
+
+## MCP 配置
+
+将以下配置复制到 MCP 客户端的本地 Stdio 配置中。客户端需要能找到 `uvx`；首次安装所需包时需要访问包源。
+
+```json
+{
+  "mcpServers": {
+    "vmware-log-insight": {
+      "command": "uvx",
+      "args": ["--from", "vmware-log-insight==2.4.2", "vmware-log-insight-mcp"],
+      "env": {
+        "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml"
+      }
+    }
+  }
+}
+```
+
+<a id="readme-capabilities-and-workflows"></a>
+
+## 能力与工作流
+
+### MCP 工具（7 个，全只读）
 
 | 工具 | 作用 |
 |---|---|
@@ -50,27 +91,25 @@ vmware-log-insight doctor
 | `get_log_insight_version` | 设备版本/构建号 |
 | `list_log_alerts` / `get_log_alert` / `get_log_alert_history` | 查询已定义的告警及其触发历史 |
 
-## 常用工作流
+### 常用工作流
 
 - **快速找错**：`vmware-log-insight search -q error -l 1h`
 - **日志何时突增**：`vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`，看 `spikes[]`，再 `search` 突刺时间窗
 - **根因定位**：把 `search_logs` 结果（连同 vmware-monitor 的 vCenter 事件、vmware-aria 的指标）交给 **vmware-debug** 的 `build_incident_timeline`
 
-## 排障
+<a id="readme-safety-and-audit"></a>
 
-- `/sessions 返回 401` → 检查 username/password/`provider` 以及 `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` 环境变量。
-- `处处 503` → 设备正在启动；`doctor` 把它报告为状态，而不是崩溃。
-- 结果为空 → 放宽 `--last`；`text` 按整词匹配，不是子串（可试 `word*`）；默认 API 端口是 **9543**（不同请设置 `port`）。
-- `UCOUNT needs a field` → 传 `--field`（名称来自 `fields`）；COUNT 和 SAMPLE 不带字段。
+## 安全与审计
 
-## 安全
+### 安全
 
 结构上只读。凭据存于 `~/.vmware-log-insight/.env`（`chmod 600`）；明文密码首次加载自动
 转为 grep 不可见的 `b64:` 形式（**是混淆不是加密**——真合规请从 secret manager 注入）。
 默认开启 TLS 校验。详见 [SECURITY.md](SECURITY.md)。
 
 <!-- usage: remote-and-exposure -->
-## 远程访问（HTTPS）与限制工具
+
+### 远程访问（HTTPS）与限制工具
 
 默认情况下 `vmware-log-insight mcp` 通过 stdio 服务一个本地客户端，并提供全部工具。以下两个选项可以改变这一点
 （需 vmware-policy ≥ 1.21.0）。
@@ -126,10 +165,55 @@ claude mcp add --transport http vmware-log-insight https://mcp.example.com:8443/
 
 详见 `skills/vmware-log-insight/references/setup-guide.md`（"Serving MCP over HTTPS"、"Limiting which tools are offered"）。
 
-## 系统代理绕过
+<a id="readme-troubleshooting"></a>
+
+## 故障排查
+
+### 排障
+
+- `/sessions 返回 401` → 检查 username/password/`provider` 以及 `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` 环境变量。
+- `处处 503` → 设备正在启动；`doctor` 把它报告为状态，而不是崩溃。
+- 结果为空 → 放宽 `--last`；`text` 按整词匹配，不是子串（可试 `word*`）；默认 API 端口是 **9543**（不同请设置 `port`）。
+- `UCOUNT needs a field` → 传 `--field`（名称来自 `fields`）；COUNT 和 SAMPLE 不带字段。
+
+### 系统代理绕过
 
 Log Insight REST 客户端按操作系统的代理绕过列表直连配置的目标地址。
 TLS 校验仍由 `verify_ssl` 控制，`SSL_CERT_FILE` 等 CA 环境设置继续生效；其他地址保留原有代理路由。
+
+<a id="readme-companion-skills"></a>
+
+## 配套 Skills
+
+VMware Skills 家族包含 14 个 MCP Server 和共享 Policy 库。按职责选择工具： [vmware-skills](https://github.com/vmware-skills).
+
+### 配套 Skill
+
+| 需求 | Skill |
+|---|---|
+| 原始集中日志 + 突刺 | **vmware-log-insight**（本项目） |
+| vCenter 事件与告警 | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) |
+| 指标 / 异常 / 容量 | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) |
+| 故障关联 / 根因 | [vmware-debug](https://github.com/vmware-skills/VMware-Debug)（把 `search_logs` 结果喂给它） |
+| VM 生命周期 / 运维 | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) |
+
+<a id="readme-reference"></a>
+
+## 参考资料
+
+变更记录： [RELEASE_NOTES.md](RELEASE_NOTES.md).
+
+使用自己的模型和 Agent 宿主进行只读自测： [model-fit self-test](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md).
+
+### 升级到 2.0
+
+2.0 把全部 7 个 MCP 工具改成动词在前（例如 `alert_get` → `get_log_alert`, `alert_history` → `get_log_alert_history`, `alert_list` → `list_log_alerts`），完整的新旧名对照表见
+[RELEASE_NOTES.md](RELEASE_NOTES.md#v200--mcp-tools-renamed-verb-first)。其他都不变：工具、参数、安全确认门和 CLI 命令都一样。
+如果 agent 提示词、脚本或 `~/.vmware/rules.yaml` 里写了工具名，请改成新名——不过用旧名写的 deny 规则在
+vmware-policy ≥ 1.18 下仍然生效（`vmware-audit policy` 会列出因改名而多匹配的规则），vmware-pilot ≥ 1.13 也会自动转换已保存工作流里的旧名。
+如果还有 2.0 之前的安装共用这个 `rules.yaml`，请把它的 vmware-policy 也升到 ≥ 1.18.2：它会按新旧两个名字匹配每条规则，一份文件两边都管用。
+
+<a id="readme-license"></a>
 
 ## 许可证
 

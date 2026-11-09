@@ -2,7 +2,21 @@
 
 # VMware Log Insight
 
-For a read-only check of this skill with your model and agent host, use the shared [model-fit self-test](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md) in the marketplace root.
+[![PyPI](https://img.shields.io/pypi/v/vmware-log-insight)](https://pypi.org/project/vmware-log-insight/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#readme-license)
+
+English | [中文](README-CN.md)
+
+Maintainer: Wei Zhou · [zhouwei008@gmail.com](mailto:zhouwei008@gmail.com)
+
+Community-maintained open-source project; not an official VMware or Broadcom product.
+
+[Overview](#readme-overview) · [Quick Start](#readme-quick-start) · [MCP Configuration](#readme-mcp-configuration) · [Capabilities and Workflows](#readme-capabilities-and-workflows) · [Safety and Audit](#readme-safety-and-audit) · [Troubleshooting](#readme-troubleshooting) · [Companion Skills](#readme-companion-skills) · [Reference](#readme-reference) · [License](#readme-license)
+
+<a id="readme-overview"></a>
+
+## Overview
+
+Runs locally over stdio by default; configure required targets and credentials on your own machine.
 
 > **Disclaimer**: Community-maintained open-source project, **not affiliated with,
 > endorsed by, or sponsored by VMware, Inc. or Broadcom Inc.** "VMware", "vSphere",
@@ -13,27 +27,25 @@ Read-only log search and aggregation for **VMware Aria Operations for Logs**
 hosts, vCenter, and VMs. The centralized-log data source for the VMware skill
 family. **Strictly non-destructive**: it queries, it never writes.
 
-## Upgrading to 2.0
+Full agent instructions: [`skills/vmware-log-insight/SKILL.md`](skills/vmware-log-insight/SKILL.md).
 
-2.0 renames all 7 MCP tools so every name starts with a verb (e.g. `alert_get` → `get_log_alert`, `alert_history` → `get_log_alert_history`, `alert_list` → `list_log_alerts`). The full old → new table is in
-[RELEASE_NOTES.md](RELEASE_NOTES.md#v200--mcp-tools-renamed-verb-first). Nothing else changes: same tools, parameters,
-safety gates and CLI commands. If an agent prompt, script or `~/.vmware/rules.yaml` names a tool, update it — though deny
-rules written with the old names keep working with vmware-policy ≥ 1.18 (`vmware-audit policy` lists any rule the
-renames widened), and vmware-pilot ≥ 1.13 translates old names in saved workflows.
-If an install older than 2.0 shares that `rules.yaml`, give it vmware-policy ≥ 1.18.2 too: it matches each rule
-against both the old and the new name, so one file serves both.
+<a id="readme-quick-start"></a>
 
-## Companion Skills
+## Quick Start
 
-| Need | Skill | Tools |
-|---|---|:-:|
-| Raw centralized logs + spikes | **vmware-log-insight** (this) | 7 |
-| vCenter events & alarms | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) | 27 |
-| Metrics, anomalies, capacity | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) | 28 |
-| Incident correlation / root cause | [vmware-debug](https://github.com/vmware-skills/VMware-Debug) — feed it `search_logs` output | 2 |
-| VM lifecycle / operations | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) | 49 |
+Requires Python `>=3.10` and `uv`.
 
-## Install
+```bash
+uv tool install vmware-log-insight==2.4.2
+vmware-log-insight --help
+```
+
+Target, credential and local data setup: [setup guide](skills/vmware-log-insight/references/setup-guide.md).
+
+<details>
+<summary>Installation and configuration details (including offline setup)</summary>
+
+### Install
 
 ```bash
 uv tool install vmware-log-insight
@@ -44,7 +56,7 @@ chmod 600 ~/.vmware-log-insight/.env
 vmware-log-insight doctor
 ```
 
-### Offline / Air-Gapped Install (from source)
+#### Offline / Air-Gapped Install (from source)
 
 This project uses the modern PEP 517 build system (hatchling), so there is **no
 `setup.py`** by design — that is expected, not a missing file. If you cloned the
@@ -72,7 +84,34 @@ pip wheel . -w dist        # → dist/*.whl   (or: uv build, for just this packa
 pip install --no-index --find-links dist vmware-log-insight
 ```
 
-## MCP Tools (7 — all read-only)
+
+</details>
+
+<a id="readme-mcp-configuration"></a>
+
+## MCP Configuration
+
+Copy this configuration into your MCP client's local stdio settings. The client must be able to find `uvx`; the initial package installation requires access to a package index.
+
+```json
+{
+  "mcpServers": {
+    "vmware-log-insight": {
+      "command": "uvx",
+      "args": ["--from", "vmware-log-insight==2.4.2", "vmware-log-insight-mcp"],
+      "env": {
+        "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml"
+      }
+    }
+  }
+}
+```
+
+<a id="readme-capabilities-and-workflows"></a>
+
+## Capabilities and Workflows
+
+### MCP Tools (7 — all read-only)
 
 | Tool | What |
 |---|---|
@@ -82,20 +121,17 @@ pip install --no-index --find-links dist vmware-log-insight
 | `get_log_insight_version` | Appliance version/build |
 | `list_log_alerts` / `get_log_alert` / `get_log_alert_history` | Query defined alerts and their trigger history |
 
-## Workflows
+### Workflows
 
 - **Find errors fast** — `vmware-log-insight search -q error -l 1h`.
 - **Where did logs burst?** — `vmware-log-insight aggregate -q error -l 6h --bin-ms 300000`, read `spikes[]`, then `search` the spike window.
 - **Root cause** — pass `search_logs` results (plus vCenter events from vmware-monitor and metrics from vmware-aria) to **vmware-debug** `build_incident_timeline`.
 
-## Troubleshooting
+<a id="readme-safety-and-audit"></a>
 
-- `401 on /sessions` → check username/password/`provider` and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
-- `503 everywhere` → appliance starting up; `doctor` reports it as a status, not a crash.
-- Empty results → widen `--last`; `text` matches whole words, not substrings (try `word*`); default API port is **9543** (set `port` if different).
-- `UCOUNT needs a field` → pass `--field` (names from `fields`); COUNT and SAMPLE take none.
+## Safety and Audit
 
-## Security
+### Security
 
 Read-only by construction. Credentials in `~/.vmware-log-insight/.env` (`chmod 600`);
 plaintext passwords auto-obfuscated to grep-safe `b64:` (obfuscation, not
@@ -103,7 +139,8 @@ encryption — inject from a secret manager for real secrecy). TLS on by default
 See [SECURITY.md](SECURITY.md).
 
 <!-- usage: remote-and-exposure -->
-## Remote access (HTTPS) and limiting tools
+
+### Remote access (HTTPS) and limiting tools
 
 By default `vmware-log-insight mcp` speaks stdio to one local client and offers every tool. Two options change that
 (vmware-policy ≥ 1.21.0).
@@ -160,11 +197,58 @@ exists for the write-capable skills. Least privilege comes from the account the 
 
 Details: `skills/vmware-log-insight/references/setup-guide.md` ("Serving MCP over HTTPS", "Limiting which tools are offered").
 
-## System proxy bypass
+<a id="readme-troubleshooting"></a>
+
+## Troubleshooting
+
+### Troubleshooting
+
+- `401 on /sessions` → check username/password/`provider` and the `VMWARE_LOG_INSIGHT_<TARGET>_PASSWORD` env var.
+- `503 everywhere` → appliance starting up; `doctor` reports it as a status, not a crash.
+- Empty results → widen `--last`; `text` matches whole words, not substrings (try `word*`); default API port is **9543** (set `port` if different).
+- `UCOUNT needs a field` → pass `--field` (names from `fields`); COUNT and SAMPLE take none.
+
+### System proxy bypass
 
 The Log Insight REST client honors the operating system proxy bypass list for the configured origin.
 TLS verification still follows `verify_ssl`, and CA environment settings such as `SSL_CERT_FILE` remain active.
 Other origins retain their normal proxy routing.
+
+<a id="readme-companion-skills"></a>
+
+## Companion Skills
+
+The VMware Skills family contains 14 MCP servers and the shared Policy library. Choose tools by responsibility: [vmware-skills](https://github.com/vmware-skills).
+
+### Companion Skills
+
+| Need | Skill |
+|---|---|
+| Raw centralized logs + spikes | **vmware-log-insight** (this) |
+| vCenter events & alarms | [vmware-monitor](https://github.com/vmware-skills/VMware-Monitor) |
+| Metrics, anomalies, capacity | [vmware-aria](https://github.com/vmware-skills/VMware-Aria) |
+| Incident correlation / root cause | [vmware-debug](https://github.com/vmware-skills/VMware-Debug) — feed it `search_logs` output |
+| VM lifecycle / operations | [vmware-aiops](https://github.com/vmware-skills/VMware-AIops) |
+
+<a id="readme-reference"></a>
+
+## Reference
+
+Release history: [RELEASE_NOTES.md](RELEASE_NOTES.md).
+
+Read-only self-test with your own model and agent host: [model-fit self-test](https://github.com/vmware-skills/marketplace/blob/main/MODEL_FIT_SELF_TEST.md).
+
+### Upgrading to 2.0
+
+2.0 renames all 7 MCP tools so every name starts with a verb (e.g. `alert_get` → `get_log_alert`, `alert_history` → `get_log_alert_history`, `alert_list` → `list_log_alerts`). The full old → new table is in
+[RELEASE_NOTES.md](RELEASE_NOTES.md#v200--mcp-tools-renamed-verb-first). Nothing else changes: same tools, parameters,
+safety gates and CLI commands. If an agent prompt, script or `~/.vmware/rules.yaml` names a tool, update it — though deny
+rules written with the old names keep working with vmware-policy ≥ 1.18 (`vmware-audit policy` lists any rule the
+renames widened), and vmware-pilot ≥ 1.13 translates old names in saved workflows.
+If an install older than 2.0 shares that `rules.yaml`, give it vmware-policy ≥ 1.18.2 too: it matches each rule
+against both the old and the new name, so one file serves both.
+
+<a id="readme-license"></a>
 
 ## License
 
