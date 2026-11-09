@@ -48,7 +48,7 @@ family. Strictly non-destructive: it queries, it never writes.
 ## Quick Install
 
 ```bash
-uv tool install vmware-log-insight==2.4.2
+uv tool install vmware-log-insight==2.4.3
 cp config.example.yaml ~/.vmware-log-insight/config.yaml   # then edit
 vmware-log-insight doctor       # verify connectivity
 ```

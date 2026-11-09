@@ -34,7 +34,7 @@ VM syslog 的日志平台）的**只读**日志检索与聚合。VMware skill �
 需要 Python `>=3.10` 和 `uv`。
 
 ```bash
-uv tool install vmware-log-insight==2.4.2
+uv tool install vmware-log-insight==2.4.3
 vmware-log-insight --help
 ```
 
@@ -46,7 +46,7 @@ vmware-log-insight --help
 ### 安装
 
 ```bash
-uv tool install vmware-log-insight
+uv tool install vmware-log-insight==2.4.3
 mkdir -p ~/.vmware-log-insight
 cp config.example.yaml ~/.vmware-log-insight/config.yaml   # 填写 host/username/provider
 echo 'VMWARE_LOG_INSIGHT_PROD_PASSWORD=...' > ~/.vmware-log-insight/.env
@@ -68,7 +68,7 @@ vmware-log-insight doctor
   "mcpServers": {
     "vmware-log-insight": {
       "command": "uvx",
-      "args": ["--from", "vmware-log-insight==2.4.2", "vmware-log-insight-mcp"],
+      "args": ["--from", "vmware-log-insight==2.4.3", "vmware-log-insight-mcp"],
       "env": {
         "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml"
       }
