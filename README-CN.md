@@ -34,7 +34,7 @@ VM syslog 的日志平台）的**只读**日志检索与聚合。VMware skill �
 需要 Python `>=3.10` 和 `uv`。
 
 ```bash
-uv tool install vmware-log-insight==2.4.3
+uv tool install vmware-log-insight==2.4.4
 vmware-log-insight --help
 ```
 
@@ -46,7 +46,7 @@ vmware-log-insight --help
 ### 安装
 
 ```bash
-uv tool install vmware-log-insight==2.4.3
+uv tool install vmware-log-insight==2.4.4
 mkdir -p ~/.vmware-log-insight
 cp config.example.yaml ~/.vmware-log-insight/config.yaml   # 填写 host/username/provider
 echo 'VMWARE_LOG_INSIGHT_PROD_PASSWORD=...' > ~/.vmware-log-insight/.env
@@ -68,7 +68,7 @@ vmware-log-insight doctor
   "mcpServers": {
     "vmware-log-insight": {
       "command": "uvx",
-      "args": ["--from", "vmware-log-insight==2.4.3", "vmware-log-insight-mcp"],
+      "args": ["--from", "vmware-log-insight==2.4.4", "vmware-log-insight-mcp"],
       "env": {
         "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml"
       }
@@ -218,3 +218,10 @@ vmware-policy ≥ 1.18 下仍然生效（`vmware-audit policy` 会列出因改�
 ## 许可证
 
 MIT。
+
+### 瞬时请求恢复
+
+仅 GET 请求会在传输故障或 502/503/504 响应后自动重试。写请求即使显式提供
+重试次数也只发送一次：未收到响应时，变更可能已经生效。再次写入前应先检查
+目标状态。明确认证拒绝后的单次认证恢复单独处理。该边界已通过合成 HTTP
+契约测试，不能据此宣称获得真实设备兼容性结论。

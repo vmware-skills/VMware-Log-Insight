@@ -36,7 +36,7 @@ Full agent instructions: [`skills/vmware-log-insight/SKILL.md`](skills/vmware-lo
 Requires Python `>=3.10` and `uv`.
 
 ```bash
-uv tool install vmware-log-insight==2.4.3
+uv tool install vmware-log-insight==2.4.4
 vmware-log-insight --help
 ```
 
@@ -48,7 +48,7 @@ Target, credential and local data setup: [setup guide](skills/vmware-log-insight
 ### Install
 
 ```bash
-uv tool install vmware-log-insight==2.4.3
+uv tool install vmware-log-insight==2.4.4
 mkdir -p ~/.vmware-log-insight
 cp config.example.yaml ~/.vmware-log-insight/config.yaml   # edit host/username/provider
 echo 'VMWARE_LOG_INSIGHT_PROD_PASSWORD=...' > ~/.vmware-log-insight/.env
@@ -98,7 +98,7 @@ Copy this configuration into your MCP client's local stdio settings. The client 
   "mcpServers": {
     "vmware-log-insight": {
       "command": "uvx",
-      "args": ["--from", "vmware-log-insight==2.4.3", "vmware-log-insight-mcp"],
+      "args": ["--from", "vmware-log-insight==2.4.4", "vmware-log-insight-mcp"],
       "env": {
         "VMWARE_LOG_INSIGHT_CONFIG": "~/.vmware-log-insight/config.yaml"
       }
@@ -253,3 +253,12 @@ against both the old and the new name, so one file serves both.
 ## License
 
 MIT.
+
+### Transient request recovery
+
+Only GET requests are automatically retried after a transport failure or a
+502/503/504 response. Writes are sent once even when a retry budget is supplied:
+a missing response may mean the change already took effect. Inspect the target
+before retrying a write. A single authentication recovery after an explicit
+rejection is handled separately. This boundary has synthetic HTTP contract
+coverage; it does not establish positive appliance compatibility.
