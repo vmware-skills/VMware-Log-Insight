@@ -48,7 +48,7 @@ family. Strictly non-destructive: it queries, it never writes.
 ## Quick Install
 
 ```bash
-uv tool install vmware-log-insight==2.4.3
+uv tool install vmware-log-insight==2.4.4
 cp config.example.yaml ~/.vmware-log-insight/config.yaml   # then edit
 vmware-log-insight doctor       # verify connectivity
 ```
@@ -164,3 +164,7 @@ self-signed lab appliances. See `references/setup-guide.md`.
 ## License
 
 MIT.
+
+## Current evidence boundary
+
+Automatic transient transport/gateway retries apply only to GET reads. Do not replay a write after a lost response without checking the target; explicit authentication recovery is separate. See `references/capabilities.md`.

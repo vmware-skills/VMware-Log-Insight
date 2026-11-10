@@ -274,7 +274,7 @@ class LogInsightClient:
         json_data: dict[str, Any] | None = None,
         retries: int = 1,
     ) -> httpx.Response:
-        """Send one request, recovering from auth and transient failures.
+        """Send one request; transient recovery is GET-only, auth recovery bounded.
 
         Layered per the error-recovery contract: (1) transport/timeout and
         transient gateway statuses (502/503/504) are retried once after a short
@@ -284,6 +284,14 @@ class LogInsightClient:
         translated to a teaching ``LogInsightApiError``. 4xx client errors
         (e.g. 404 for a bad id) are NOT retried.
         """
+        # A lost write response is not evidence that the mutation failed.
+        # Never replay a write on a transient error, even with an explicit budget.
+        if method != "GET":
+            retries = 0
+        uncertain_write = (
+            "The write may already have taken effect; inspect the target before retrying. "
+            if method != "GET" else ""
+        )
         attempt = 0
         reauthed = False
         while True:
@@ -297,7 +305,7 @@ class LogInsightClient:
                     time.sleep(_RETRY_DELAY_SEC)
                     continue
                 raise LogInsightApiError(
-                    f"Log Insight request could not connect. "
+                    f"{uncertain_write}Log Insight request could not connect. "
                     f"{_transport_hint(exc)} Then run `vmware-log-insight "
                     f"doctor`. Configured host: {self._target.host}. "
                     f"Failing call: {method} {path}",
@@ -318,7 +326,7 @@ class LogInsightClient:
 
             if resp.status_code >= 400:
                 raise LogInsightApiError(
-                    f"Log Insight returned HTTP {resp.status_code}. "
+                    f"{uncertain_write if resp.status_code in _TRANSIENT_STATUS else ''}Log Insight returned HTTP {resp.status_code}. "
                     f"{_hint_for_status(resp.status_code)} "
                     f"Run `vmware-log-insight doctor` if every call to this "
                     f"target fails. Failing call: {method} {path}",

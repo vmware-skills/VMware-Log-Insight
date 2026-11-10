@@ -101,3 +101,7 @@ HTTP 400 without one. An unknown field name returns an empty series, not an erro
   they need confirmation against a live appliance's `/rest-api` reference (tracked in
   BACKLOG, same status as VKS `/wcp/login`).
 - No ingest/write tools by design. Alert management (create/edit/delete) is out of scope.
+
+## Maintenance safety boundary
+
+Automatic transient transport/gateway retries apply only to GET reads. Do not replay a write after a lost response without checking the target; explicit authentication recovery is separate.
