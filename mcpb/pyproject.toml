@@ -1,0 +1,6 @@
+[project]
+name = "vmware-log-insight-mcpb"
+version = "2.4.4"
+description = "Claude Desktop extension shim that runs the published vmware-log-insight MCP server"
+requires-python = ">=3.10"
+dependencies = ["vmware-log-insight==2.4.4"]

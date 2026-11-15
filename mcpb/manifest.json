@@ -1,0 +1,64 @@
+{
+  "manifest_version": "0.4",
+  "name": "vmware-log-insight",
+  "display_name": "VMware Log Insight",
+  "version": "2.4.4",
+  "description": "VMware Aria Operations for Logs (vRealize Log Insight) read-only log search, aggregation, and alert queries — MCP + CLI",
+  "long_description": "Runs the published vmware-log-insight 2.4.4 MCP server locally. Configure targets and credentials with the setup guide first, then point this extension at that config.",
+  "author": {
+    "name": "Wei Zhou",
+    "url": "https://github.com/zw008"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vmware-skills/VMware-Log-Insight"
+  },
+  "homepage": "https://github.com/vmware-skills/VMware-Log-Insight",
+  "documentation": "https://github.com/vmware-skills/VMware-Log-Insight/blob/main/skills/vmware-log-insight/references/setup-guide.md",
+  "support": "https://github.com/vmware-skills/VMware-Log-Insight/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "uv",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "server/main.py"
+      ],
+      "env": {
+        "VMWARE_LOG_INSIGHT_CONFIG": "${user_config.config_path}"
+      }
+    }
+  },
+  "user_config": {
+    "config_path": {
+      "type": "file",
+      "title": "vmware-log-insight config file",
+      "description": "config.yaml from the setup guide. Passwords stay in the .env file next to it.",
+      "required": true,
+      "default": "${HOME}/.vmware-log-insight/config.yaml"
+    }
+  },
+  "tools_generated": true,
+  "keywords": [
+    "vmware",
+    "vsphere",
+    "log-insight",
+    "logs",
+    "search"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "python": ">=3.10"
+    }
+  }
+}
